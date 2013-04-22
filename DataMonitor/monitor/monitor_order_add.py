@@ -16,6 +16,7 @@ if __name__ == '__main__':
     sys.path.append('../../')
 
 from DataMonitor.conf.settings import CACHE_DIR, ORDER_CHECK_SETTING
+from CommonTools.ztc_order_tools import ZtcOrder
 
 def get_record_order(id_name):
     file_date = file(CACHE_DIR+id_name+'_order').read().split('\n')
@@ -64,23 +65,10 @@ def getUrl(id, day):
     return url
 
 def get_first_page_order(id):
-    flag = False
-    currentPage = 'currentPage'
-    pageCount = 'pageCount'
-    rateNum = 'rateNum'
-    rateSum = 'rateSum'
-    isB2CSeller = 'isB2CSeller'
-    nick = 'nick'
-    deadline = 'deadline'
-    version = 'version'
-    isPlanSubed = 'isPlanSubed'
-    payTime = 'payTime'
-    data = 'data'
-    isTryoutSubed = 'isTryoutSubed'
     for day in range(1,2):
         url = getUrl(id, str(day))
         content = getWebPage(url).split('\n')
-        order_dict = eval(content[1])
+        order_dict = ZtcOrder.eval_ztc_order(content[1])
         order_list = order_dict['data']
         return order_list
 

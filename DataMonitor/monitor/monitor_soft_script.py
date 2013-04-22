@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger()
 import datetime
 if __name__ == '__main__':
-    sys.path.append('../../')
+    sys.path.append('/home/zhoujiebing/Analysis/')
 
 import DataMonitor.conf.settings
 from CommonTools.send_tools import send_sms
@@ -27,7 +27,8 @@ def monitor_soft_script():
     try:
         return_info = monitor_soft() 
     except Exception,e:
-        logger.error(('monitor_soft error: %s', str(e)))
+        logger.error('monitor_soft error: %s', str(e))
+        send_sms('13738141586', 'monitor_soft_script error: '+str(e))
     else:
         logger.info(return_info)
 
@@ -51,8 +52,8 @@ def monitor_soft():
     return_info = marketing_info + order_info + comment_info 
     
     if return_info:
-        send_sms('13738141586', return_info)
-        
+        send_sms('13738141586', 'test: ' + return_info)
+        return 'monitor_soft: ' + return_info
         #send XJ
         send_sms('18658818166', return_info)
         if comment_info:
@@ -69,4 +70,4 @@ def monitor_soft():
         return 'monitor_soft ok'
 
 if __name__ == '__main__':
-    print monitor_soft()
+    monitor_soft_script()
