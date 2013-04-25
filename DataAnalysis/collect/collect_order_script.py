@@ -9,7 +9,6 @@
 @copyright: Copyright alibaba-inc.com
 
 """
-import os
 import re
 import sys
 import urllib2
