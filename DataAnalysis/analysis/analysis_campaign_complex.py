@@ -17,6 +17,8 @@ def analysis_campaign_complex(file_name, campaign_name):
     campaign_list = []
     for line in file(file_name):
         campaign = Report.parser_report(line)
+        if not campaign:
+            continue
         if campaign['campaign'] == '账户整体情况':
             shop = campaign
             continue

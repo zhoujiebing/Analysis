@@ -17,32 +17,55 @@ import urllib,urllib2
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from CommonTools.logger import logger
+
 SEND_COMMAND = 'MT_REQUEST' 
 SPID = '5208'
 SP_PASSWORD = 'mm5208'
 DC = '15'
 SEND_MSG_URL = 'http://esms.etonenet.com/sms/mt'
 
-def send_email(msgTo, content, type):
-    """发送email"""
+def send_email_with_text(msgTo, text, subject):
+    """发送文本email"""
 
-    (attachment,html) = content
     msg = MIMEMultipart()
-    msg['Subject'] = time.strftime('%Y-%m-%d',time.localtime(time.time())) + type
+    msg.attach(MIMEText(text, _charset='utf-8'))
+    msg['Subject'] = subject
     msg['From'] = 'zhoujiebing@maimiaotech.com'
     msg['To'] = msgTo
-    html_att = MIMEText(html, 'html', 'utf-8')
-    att = MIMEText(attachment, 'plain', 'utf-8')
-    msg.attach(html_att)
-    msg.attach(att)
     try:
         smtp = smtplib.SMTP()
         smtp.connect('smtp.ym.163.com', 25) 
         smtp.login(msg['From'], 'zhoujb.19890211')                                                                       
-        smtp.sendmail(msg['From'], msg['To'].split(','), msg.as_string())
+        smtp.sendmail(msg['From'], msg['To'], msg.as_string())
     except Exception,e:
-        print e
+        logger.error('send_email: %s' % (str(e)))
 
+def send_email_with_html(msgTo, html, subject):
+    """发送html email"""
+
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg['From'] = 'zhoujiebing@maimiaotech.com'
+    msg['To'] = msgTo
+    html_att = MIMEText(html, 'html', 'utf-8')
+    msg.attach(html_att)
+    try:
+        smtp = smtplib.SMTP()
+        smtp.connect('smtp.ym.163.com', 25) 
+        smtp.login(msg['From'], 'zhoujb.19890211')                                                                       
+        smtp.sendmail(msg['From'], msg['To'], msg.as_string())
+    except Exception,e:
+        logger.error('send_email: %s' % (str(e)))
+
+def _toHex(str,charset):
+    s = str.encode(charset)
+    lst = []
+    for ch in s:
+        hv = hex(ord(ch)).replace('0x', '')
+        if len(hv) == 1:
+            hv = '0'+hv
+        lst.append(hv)
+    return reduce(lambda x,y:x+y, lst)
 def _toHex(str,charset):
     s = str.encode(charset)
     lst = []
@@ -81,11 +104,11 @@ def send_sms(cellphone, text, retry_times=3):
         dict = _parse_sms_response(response.read())
         if dict.get('mterrcode',None) != '000':
             logger.error('send message to %s unsuccessfully:response error'%(cellphone,))
-            send_message(cellphone,text,retry_times)
+            send_sms(cellphone,text,retry_times)
     except urllib2.HTTPError,e:
         logger.error('send message to %s unsuccessfully:url connect error'%(cellphone,))
-        send_message(cellphone,text,retry_times)
+        send_sms(cellphone,text,retry_times)
     except Exception,e:
         logger.error('send message to %s unsuccessfully:server error'%(cellphone,))
-        send_message(cellphone,text,retry_times)
+        send_sms(cellphone,text,retry_times)
 

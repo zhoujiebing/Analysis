@@ -13,14 +13,16 @@ import os
 import sys
 import datetime
 if __name__ == '__main__':
-    sys.path.append('../../')
+    sys.path.append('/home/zhoujiebing/Analysis/')
 
 from DataAnalysis.conf.settings import logger, CURRENT_DIR
 from DBModel.shop_db import Shop 
 from DBModel.campaign_db import Campaign
+from CommonTools.send_tools import send_sms
 from CommonTools.report_tools import Report
 from CommonTools.string_tools import parser_string_to_date
 from report_db.services.rpt_sum_search_service import RptSumSearchService
+from tao_models.common.exceptions import InvalidAccessTokenException
 
 class CollectReport:
     
@@ -67,21 +69,24 @@ class CollectReport:
         logger.info('start collect report')
         for shop in self.shop_list:
             logger.info('正在抓取帐号 %s 的报表信息' % shop['nick'])
-            shop_report = RptSumSearchService.cust_rpt_sum_search(shop['nick'], shop['sid'], start_date, end_date,\
-                    {'base':True, 'effect':True}, True, shop)
-            multi_shop_report = RptSumSearchService.cust_rpt_sum_search(shop['nick'], shop['sid'], \
-                    end_date - datetime.timedelta(days=shop['days']), end_date,\
-                    {'base':True, 'effect':True}, True, shop)
+            try:
+                shop_report = RptSumSearchService.cust_rpt_sum_search(shop['nick'], shop['sid'], start_date, end_date,\
+                        {'base':True, 'effect':True}, True, shop)
+                multi_shop_report = RptSumSearchService.cust_rpt_sum_search(shop['nick'], shop['sid'], \
+                        end_date - datetime.timedelta(days=shop['days']), end_date,\
+                        {'base':True, 'effect':True}, True, shop)
+
+                campaign_list = Campaign.get_shop_campaigns(self.soft_code, shop['access_token'], shop['nick'], shop['sid'])
+                campaigns_id = [campaign['campaign_id'] for campaign in campaign_list]
+                campaigns_report = RptSumSearchService.camp_rpt_sum_search(campaigns_id, shop['nick'], \
+                        shop['sid'], start_date, end_date, {'base':True, 'effect':True}, True, shop)
+                multi_campaigns_report = RptSumSearchService.camp_rpt_sum_search(campaigns_id, shop['nick'], \
+                        shop['sid'], end_date - datetime.timedelta(days=shop['days']), end_date, \
+                        {'base':True, 'effect':True}, True, shop)
+            except InvalidAccessTokenException,e:
+                logger.error('%s : InvalidAccessTokenException' % (shop['nick']))
+                continue
             self.report_list.append(Report.merge_report(shop_report[0], multi_shop_report[0], shop))
-
-            campaign_list = Campaign.get_shop_campaigns(self.soft_code, shop['access_token'], shop['nick'], shop['sid'])
-            campaigns_id = [campaign['campaign_id'] for campaign in campaign_list]
-            campaigns_report = RptSumSearchService.camp_rpt_sum_search(campaigns_id, shop['nick'], \
-                    shop['sid'], start_date, end_date, {'base':True, 'effect':True}, True, shop)
-            multi_campaigns_report = RptSumSearchService.camp_rpt_sum_search(campaigns_id, shop['nick'], \
-                    shop['sid'], end_date - datetime.timedelta(days=shop['days']), end_date, \
-                    {'base':True, 'effect':True}, True, shop)
-
             for i in range(len(campaigns_id)):
                 self.report_list.append(Report.merge_report(campaigns_report[i], multi_campaigns_report[i], shop, campaign_list[i]))
         logger.info('finish collect report')
@@ -113,40 +118,27 @@ class CollectSYBReport(CollectReport):
             shop_info['days'] = 15
             shop_list.append(shop_info)
         
-        return shop_list[:10] 
+        return shop_list
 
     def write_report(self):
         """将报表写到文件里"""
         
-        file_obj = file(CURRENT_DIR+'data/report_data/report'+str(self.end_time)+'.csv', 'w')    
-        file_obj.write(self.header)
+        file_obj = file(CURRENT_DIR+'data/report_data/report'+str(self.today)+'.csv', 'w')    
         for report in self.report_list:
             file_obj.write(Report.to_string(report))
         file_obj.close()
 
 def collect_report_script():
-    today = datetime.date.today()
-    syb_obj = CollectSYBReport(today)
-    syb_obj.collect_report()
-    syb_obj.write_report()
+    try:
+        today = datetime.date.today()
+        syb_obj = CollectSYBReport(today)
+        syb_obj.collect_report()
+        syb_obj.write_report()
+    except Exception,e:
+        logger.exception('collect_report_script error: %s', str(e))
+        send_sms('13738141586', 'collect_report_script error: %s' % (str(e)))
+    else:
+        logger.info('collect_report_script ok')
 
 if __name__ == '__main__':
     collect_report_script()
-    exit(0)
-
-    arg_len = len(sys.argv)
-    if arg_len == 1:
-        sybReport = SYBReport(1)
-        sybReport.get_syb_report()
-        exit()
-    if arg_len == 2:
-        sybReport = SYBReport()
-        sybReport.get_shop_report(sys.argv[1])
-    if arg_len == 3:
-        sybReport = SYBReport()
-        sybReport.get_shop_report(sys.argv[1], int(sys.argv[2]))
-    if arg_len == 4:
-        sybReport = SYBReport()
-        sybReport.get_shop_report(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))
-
-    sybReport.print_report()

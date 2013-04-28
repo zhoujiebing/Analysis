@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
 from DataAnalysis.conf.settings import CURRENT_DIR
 from CommonTools.ztc_order_tools import ZtcOrder, SOFT_CODE
-from CommonTools.ztc_report_tools import ZtcReport, ORDER_TYPE, NUM_TYPE, KEYS
+from CommonTools.ztc_report_tools import ZtcReport, ORDER_TYPE, NUM_TYPE, EXACT_TYPE, KEYS, STRNUM, HEAD
 from CommonTools.logger import logger
 from CommonTools.send_tools import send_email_with_html, send_sms
 
@@ -31,8 +31,8 @@ class ZtcOrderReport(ZtcOrder):
         self.id_data = SOFT_CODE.items()
         self.today = datetime.date.today()
         self.yesterday = self.today - datetime.timedelta(days=1)
-        self.strNum = ['付费用户','免费用户','评价数','评价分']
-        self.head = ['软件名称'] + ORDER_TYPE + ['总共新增'] + self.strNum
+        self.strNum = STRNUM
+        self.head = HEAD
         self.result = []
         self.yesterday_reports = self.get_yesterday_report(str(self.yesterday))
         self.get_store_order(str(self.yesterday))
@@ -45,7 +45,7 @@ class ZtcOrderReport(ZtcOrder):
         id_report_dict = {}
         if os.path.isfile(file_name):
             for line in file(file_name):
-                report = Report.parser_ztc_report(line)
+                report = ZtcReport.parser_ztc_report(line)
                 id_report_dict[report['id_name']] = report
         return id_report_dict
 
@@ -65,7 +65,7 @@ class ZtcOrderReport(ZtcOrder):
         strhead = ','.join(self.head) + '\n'
         file_obj.write(strhead)
         for report in self.result:
-            file_obj.write(Report.to_string(report)+'\n')
+            file_obj.write(ZtcReport.to_string(report)+'\n')
         file_obj.close()
 
     def mergeDeltaNum(self, num, delta_num):
@@ -104,7 +104,9 @@ class ZtcOrderReport(ZtcOrder):
             yesterday_report = self.yesterday_reports.get(report['id_name'], None)
             
             if yesterday_report:
-                for key in NUM_TYPE:
+                for key in NUM_TYPE+EXACT_TYPE:
+                    if key == 'grade':
+                        continue
                     delta = int(report[key]) - int(yesterday_report[key]) 
                     report[key] = self.mergeDeltaNum(report[key], delta)
                 
@@ -119,20 +121,22 @@ class ZtcOrderReport(ZtcOrder):
 
     def make_report(self):
         """生成报表"""
+        
+        exact_num_dict = ZtcOrder.get_exact_num_dict()
 
         for id_info in self.id_data:
             self.id_name = id_info[0]
             id = id_info[1]
-            try:
-                report = self.count_order(self.id_name)
-                report['add_num'] = sum(report.values())
-                report['id_name'] = self.id_name
-                total_num = ZtcOrder.get_total_num(id)
-                for key in NUM_TYPE:
-                    report[key] = total_num[key]
-            except Exception, e:
-                logger.error('Report: Exception: ' + str(e))
-                continue
+            report = self.count_order(self.id_name)
+            report['add_num'] = sum(report.values())
+            report['id_name'] = self.id_name
+            total_num = ZtcOrder.get_total_num(id)
+            for key in NUM_TYPE:
+                report[key] = total_num[key]
+            exact_num = exact_num_dict[self.id_name]
+            for i in range(len(EXACT_TYPE)):
+                report[EXACT_TYPE[i]] = exact_num[i]
+
             self.result.append(report)
     
     def count_order(self, id_name):
@@ -143,7 +147,10 @@ class ZtcOrderReport(ZtcOrder):
             type_num[key] = 0
         order_list = self.order_dict[id_name]
         for order in order_list:
-            type_num[order['deadline']] += 1
+            if not type_num.has_key(order['deadline']):
+                type_num['其他'] += 1
+            else:
+                type_num[order['deadline']] += 1
 
         return type_num
 
@@ -156,9 +163,9 @@ def analysis_ztc_order_script():
         ztc.write_report()
         html = ztc.getHtml()
         send_email_with_html(ToMe, html, str(datetime.date.today())+'__直通车软件报表测试版')
-        #sendEmail(ToAll,('',html), u'__直通车软件报表修正版')
+        #send_email(ToAll, html, str(datetime.date.today())+'__直通车软件报表公测版')
     except Exception,e:
-        logger.error('analysis_ztc_order_script error: %s' % (str(e)))
+        logger.exception('analysis_ztc_order_script error: %s' % (str(e)))
         send_sms('13738141586', 'analysis_ztc_order_script error: '+str(e))
     else:
         logger.info('analysis_ztc_order_script ok')

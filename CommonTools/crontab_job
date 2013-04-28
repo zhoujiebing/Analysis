@@ -4,3 +4,4 @@
 30 6 * * * python /home/zhoujiebing/Analysis/DataAnalysis/collect/collect_order_script.py 
 30 12 * * * python /home/zhoujiebing/Analysis/DataAnalysis/collect/collect_order_script.py 
 30 18 * * * python /home/zhoujiebing/Analysis/DataAnalysis/collect/collect_order_script.py 
+00 10 * * * python /home/zhoujiebing/Analysis/CommonTools/daily_report.py

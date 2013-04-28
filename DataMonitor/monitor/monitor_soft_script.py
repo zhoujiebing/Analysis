@@ -27,7 +27,7 @@ def monitor_soft_script():
     try:
         return_info = monitor_soft() 
     except Exception,e:
-        logger.error('monitor_soft error: %s', str(e))
+        logger.exception('monitor_soft error: %s', str(e))
         send_sms('13738141586', 'monitor_soft_script error: '+str(e))
     else:
         logger.info(return_info)
@@ -52,8 +52,8 @@ def monitor_soft():
     return_info = marketing_info + order_info + comment_info 
     
     if return_info:
-        send_sms('13738141586', 'test: ' + return_info)
-        return 'monitor_soft: ' + return_info
+        send_sms('13738141586', return_info)
+        
         #send XJ
         send_sms('18658818166', return_info)
         if comment_info:

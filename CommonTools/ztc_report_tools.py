@@ -13,9 +13,12 @@ import os
 import re
 import urllib2
 
-ORDER_TYPE = ['1个月','3个月','6个月','1年','7天']
+ORDER_TYPE = ['1个月','3个月','6个月','1年','其他']
 NUM_TYPE = ['pay_num','free_num','comment_num','grade']
-KEYS = ['id_name'] + ORDER_TYPE + ['add_num'] + NUM_TYPE
+EXACT_TYPE = ['all_num', 'pv_num']
+KEYS = ['id_name'] + ORDER_TYPE + ['add_num'] + ['all_num'] + NUM_TYPE + ['pv_num']
+STRNUM = ['总用户','付费用户','免费用户','评价数','评价分','浏览数']
+HEAD = ['软件名称'] + ORDER_TYPE + ['总共新增'] + STRNUM
 
 class ZtcReport:
 
@@ -27,7 +30,7 @@ class ZtcReport:
     def parser_ztc_report(self, line):
         """解析直通车 报表"""
         
-        #软件名称,1个月,3个月,6个月,1年,7天,总共新增,付费用户,免费用户,评价数,评价分
+        #软件名称,1个月,3个月,6个月,1年,7天,总共新增,总用户,浏览数,付费用户,免费用户,评价数,评价分
         report = {}
         line_data = line.split(',')
         for i in range(len(KEYS)):

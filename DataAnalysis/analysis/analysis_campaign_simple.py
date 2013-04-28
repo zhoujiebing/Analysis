@@ -63,6 +63,8 @@ def analysis_campaign_simple(file_name):
 
     for line in file(file_name):
         report = Report.parser_report(line)
+        if not report:
+            continue
         for campaign_name in soft_list:
             if report['campaign'].find(campaign_name) != -1:
                 soft_statistics_dict[campaign_name].statistics(report)

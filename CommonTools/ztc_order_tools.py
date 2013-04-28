@@ -54,19 +54,12 @@ class ZtcOrder:
         if os.path.isfile(file_name):
             for line in file(file_name):
                 order = ZtcOrder.parser_ztc_order(line)
+                if not order:
+                    continue
                 key = ZtcOrder.hash_ztc_order(order)
                 order_dict[order['id_name']][key] = order
         return order_dict
 
-    def write_order(self):
-        file_name = ZtcOrder.get_file_name(CURRENT_DIR, self.today)
-        file_obj = file(file_name, 'w')
-        for key in self.order_dict:
-            soft_order_dict = self.order_dict[key]
-            for order in soft_order_dict.values():
-                outer = str(key)+','+order['nick']+','+order['version']+','+order['deadline']+','+order['payTime']+'\n'
-                file_obj.write(outer)
-        file_obj.close()
     @classmethod
     def parser_ztc_order(self, line):
         """讲以行形式存储的 网页订单数据 转化成dict"""
@@ -74,11 +67,13 @@ class ZtcOrder:
         #str(key)+','+order['nick']+','+order['version']+','+order['deadline']+','+order['payTime']+'\n'
         order = {}
         line_data = line.split(',')
+        if len(line_data) < 5:
+            return None
         order['id_name'] = line_data[0]
         order['nick'] = line_data[1]
         order['version'] = line_data[2]
         order['deadline'] = line_data[3]
-        order['payTime'] = line_data[4]
+        order['payTime'] = line_data[4].replace('\n', '')
         return order 
 
     @classmethod
