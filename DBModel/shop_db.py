@@ -33,6 +33,15 @@ class Shop(object):
             return ShopServiceSYB.get_shop_status_by_sid(int(shop_id))
 
     @classmethod
+    def get_all_shop_info(cls, soft_code):
+        """获取所有shop_info"""
+        
+        if soft_code == 1:
+            return ShopServiceXCW.get_all_shop_info_list()
+        elif soft_code == 2:
+            return ShopServiceSYB.get_all_shop_info_list()
+
+    @classmethod
     def get_all_shop_status(cls, soft_code):
         """获取所有shop_status"""
 
@@ -55,9 +64,10 @@ class Shop(object):
             normal_shop_list.append(shop_status)
 
         return normal_shop_list
-
+    
     @classmethod
     def get_all_normal_shop_status_in_bd(cls):
         """获取北斗的所有正常shop_status"""
 
         pass
+
