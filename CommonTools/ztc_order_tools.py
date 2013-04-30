@@ -12,7 +12,43 @@
 import os
 import re
 import urllib2
+from sgmllib import SGMLParser
 
+class MySgmlParser(SGMLParser):
+    def __init__(self):
+        SGMLParser.__init__(self)
+        self.label = False
+        self.num_list = []
+
+    def start_td(self, attrs):
+        self.label = True
+
+    def end_td(self):
+        self.label = False
+
+    def handle_data(self, data):
+        if self.label:
+            data = data.strip()
+            if data.isdigit():
+                self.num_list.append(int(data))
+
+SOFT_APP = {
+        '麦苗':{'page_id':678882, 'isv_id':847721042, 'app_list':['省油宝', '北斗', '麦苗淘词']},
+        '点越':{'page_id':223037, 'isv_id':599244911, 'app_list':['智驾宝', '懒人开车', '魔镜看看']},
+        '喜宝':{'page_id':249825, 'isv_id':669952568, 'app_list':['超级车手']},
+        '派生':{'page_id':556281, 'isv_id':836440495, 'app_list':['开车精灵']},
+        '世奇':{'page_id':183061, 'isv_id':499456566, 'app_list':['淘快车', '淘快词']},
+        '思正':{'page_id':351841, 'isv_id':734268441, 'app_list':['疯狂标签', '疯狂海报', '疯狂排名', '疯狂车手']},
+        '名传':{'page_id':690262, 'isv_id':897211958, 'app_list':['车神']},
+        '万青':{'page_id':486444, 'isv_id':804767803, 'app_list':['好又快']},
+        '大麦':{'page_id':387653, 'isv_id':750452133, 'app_list':['大麦优驾']},
+        '将行':{'page_id':886856, 'isv_id':928006811, 'app_list':['智能淘词', '智能车手']},
+        '思麦':{'page_id':298806, 'isv_id':308297792, 'app_list':['如意营销', '如意掌柜', '如意快车']},
+        '聚连':{'page_id':486316, 'isv_id':804599509, 'app_list':['聚灵神']},
+        '爱聚':{'page_id':1014055, 'isv_id':890019595, 'app_list':['开车宝']},
+        #'快云':{'page_id':965376, 'isv_id':1042417251, 'app_list':['超级快车']},
+        '云贝':{'page_id':898867, 'isv_id':931059416, 'app_list':['极品飞车']}
+        }
 SOFT_CODE = {
         '省油宝':'ts-1796606',
         '北斗':'ts-1797607',
@@ -28,10 +64,11 @@ SOFT_CODE = {
         '车神':'ts-1804425',
         '极品飞车':'ts-1810074',
         '智能淘词':'ts-1813497',
+        '智能车手':'ts-1812500',
         '疯狂车手':'ts-1813498',
         '魔镜看看':'ts-1809313',
         '如意快车':'ts-1819813',
-        '超级快车':'FW_GOODS-1834824',
+        #'超级快车':'FW_GOODS-1834824',
         '聚灵神':'FW_GOODS-1836541',
         '开车宝':'FW_GOODS-1839667',
         }
@@ -54,7 +91,7 @@ class ZtcOrder:
         if os.path.isfile(file_name):
             for line in file(file_name):
                 order = ZtcOrder.parser_ztc_order(line)
-                if not order:
+                if not order or not order_dict.has_key(order['id_name']):
                     continue
                 key = ZtcOrder.hash_ztc_order(order)
                 order_dict[order['id_name']][key] = order
@@ -103,9 +140,10 @@ class ZtcOrder:
         return eval(content)
     
     @classmethod
-    def get_total_num(self, id):
+    def get_total_num(self, service_code):
         """获取 粗略 总数 信息"""
-        url =  'http://fuwu.taobao.com/ser/detail.htm?service_code=' + id 
+        url =  'http://fuwu.taobao.com/ser/detail.htm?service_code=' + service_code
+        #keys 与ztc_report_tools 中的NUM_TYPE 呼应
         keys = ['grade', 'comment_num', 'pay_num', 'free_num', 'pv']
         wp = urllib2.urlopen(url)
         content = wp.read()
@@ -116,6 +154,10 @@ class ZtcOrder:
             v = m.group("data")
             str_num = v.strip().replace(',', '')
             factor = 1
+            if str_num.find('少于100') != -1:
+                total_num[keys[i]] = 0
+                i += 1
+                continue
             if str_num.find('万') != -1:
                 factor = 10000
             str_num = re.findall('[\d.]+', str_num)
@@ -127,6 +169,44 @@ class ZtcOrder:
             i += 1
         
         return total_num
-       
+    
+    @classmethod
+    def get_exact_num2(self):
+        """获取精准 数字"""
+        
+        url = 'http://fuwu.taobao.com/serv/shop_index.htm?spm=0.0.0.0.PzIJIc&page_id=678882&isv_id=847721042&page_rank=2&tab_type=1'
+        wp = urllib2.urlopen(url)
+        content = wp.read()
+        r = re.compile(r'(?s)<d>(?P<data>[\d]+)</d>')
+        for m in r.finditer(content):
+            v = m.group("data")
+            print v.strip()
+    
+
+    @classmethod
+    def get_exact_num(self, page_id, isv_id):
+        """获取精准 数字"""
+        
+        url = 'http://fuwu.taobao.com/serv/shop_index.htm?page_id=%d&tab_type=1&isv_id=%d' % (page_id, isv_id)
+        wp = urllib2.urlopen(url)
+        content = wp.read()
+        parser = MySgmlParser()
+        parser.feed(content)
+        return parser.num_list
+
+    @classmethod
+    def get_exact_num_dict(self):
+        exact_num_dict = {}
+        for soft in SOFT_APP.values():
+            num_list = ZtcOrder.get_exact_num(soft['page_id'], soft['isv_id'])
+            app_list = soft['app_list']
+            print 'app_list: ', ','.join(app_list)
+            print 'num_list: ', num_list
+            for i in range(len(app_list)):
+                app = app_list[i]
+                exact_num_dict[app] = (num_list[i*2], num_list[i*2+1])
+                #print '%s, %d, %d' % (app, num_list[i*2], num_list[i*2+1])
+        return exact_num_dict 
+
 if __name__ == '__main__':
-    ZtcOrder.get_total_num('ts-1796606')
+    print ZtcOrder.get_exact_num(249825, 669952568)
