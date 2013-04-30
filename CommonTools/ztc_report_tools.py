@@ -43,5 +43,3 @@ class ZtcReport:
         string_list = [str(report[key]) for key in KEYS]
         return ','.join(string_list)
 
-
-

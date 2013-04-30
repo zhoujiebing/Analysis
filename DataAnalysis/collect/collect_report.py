@@ -100,6 +100,7 @@ class CollectSYBReport(CollectReport):
     def get_shop_list(self):
         """获取省油宝 shop_list"""
 
+        time_now = datetime.datetime.now()
         shop_list = []
         shop_status_list = Shop.get_all_normal_shop_status_in_syb()
         shop_info_list = Shop.get_all_shop_info(2)
@@ -111,11 +112,15 @@ class CollectSYBReport(CollectReport):
             shop_info = shop_info_dict.get(shop['_id'], None)
             if not shop_info:
                 continue
+            shop['days'] = 15
             if shop.has_key('auto_campaign_id'):
                 shop_info[shop['auto_campaign_id']] = '省油宝长尾计划'
+                shop_info['auto_campaign_days'] = (time_now - shop['auto_campaign_init_time']).days
             if shop.has_key('key_campaign_id'):
                 shop_info[shop['key_campaign_id']] = '省油宝加力计划'
-            shop_info['days'] = 15
+                shop_info['key_campaign_days'] = (time_now - shop['key_campaign_init_time']).days
+            use_days = max(shop_info.get('auto_campaign_days', 0), shop_info.get('key_campaign_days', 0))
+            shop['days'] = min(shop['days'], use_days)
             shop_list.append(shop_info)
         
         return shop_list

@@ -36,13 +36,11 @@ class Report:
         report_dict = {}
         data = _line.split(',')
         if len(REPORT_KEYS) != len(data):
-            print REPORT_KEYS
             print _line
-            pass
+            return None
         for i in range(len(data)):
             key_type = REPORT_KEYS[i]
             report_dict[key_type[0]] = key_type[1](data[i])
-        report_dict['pay_count'] = int(report_dict['pay_count'])
         return report_dict
         
     @classmethod

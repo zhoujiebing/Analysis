@@ -69,6 +69,8 @@ def analysis_campaign_horizontal(file_name):
 
     for line in file(file_name):
         campaign = Report.parser_report(line)
+        if not campaign:
+            continue
         if not NICK or campaign['nick'] == NICK:
             if campaign['campaign'].find('省油宝长尾计划') != -1:
                 CAMPAIGN_LIST.insert(0, campaign)
