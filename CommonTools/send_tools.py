@@ -14,6 +14,9 @@ import json
 import time
 import smtplib
 import urllib,urllib2
+if __name__ == '__main__':
+    sys.path.append('../')
+
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from CommonTools.logger import logger
@@ -24,29 +27,29 @@ SP_PASSWORD = 'mm5208'
 DC = '15'
 SEND_MSG_URL = 'http://esms.etonenet.com/sms/mt'
 
-def send_email_with_text(msgTo, text, subject):
+def send_email_with_text(addressee, text, subject):
     """发送文本email"""
 
     msg = MIMEMultipart()
     msg.attach(MIMEText(text, _charset='utf-8'))
     msg['Subject'] = subject
     msg['From'] = 'zhoujiebing@maimiaotech.com'
-    msg['To'] = msgTo
+    msg['To'] = addressee
     try:
         smtp = smtplib.SMTP()
         smtp.connect('smtp.ym.163.com', 25) 
         smtp.login(msg['From'], 'zhoujb.19890211')                                                                       
         smtp.sendmail(msg['From'], msg['To'], msg.as_string())
     except Exception,e:
-        logger.error('send_email: %s' % (str(e)))
+        logger.exception('send_email: %s' % (str(e)))
 
-def send_email_with_html(msgTo, html, subject):
+def send_email_with_html(addressee, html, subject):
     """发送html email"""
 
     msg = MIMEMultipart()
     msg['Subject'] = subject
     msg['From'] = 'zhoujiebing@maimiaotech.com'
-    msg['To'] = msgTo
+    msg['To'] = addressee
     html_att = MIMEText(html, 'html', 'utf-8')
     msg.attach(html_att)
     try:
@@ -55,7 +58,35 @@ def send_email_with_html(msgTo, html, subject):
         smtp.login(msg['From'], 'zhoujb.19890211')                                                                       
         smtp.sendmail(msg['From'], msg['To'], msg.as_string())
     except Exception,e:
-        logger.error('send_email: %s' % (str(e)))
+        logger.exception('send_email: %s' % (str(e)))
+
+def send_email_with_file(addressee, text, subject, file_list):
+    """发送file email"""
+
+    msg = MIMEMultipart()
+    msg.attach(MIMEText(text, _charset='utf-8'))
+    msg['Subject'] = subject
+    msg['From'] = 'zhoujiebing@maimiaotech.com'
+    msg['To'] = addressee
+
+    for file_name in file_list:
+        ctype, encoding = mimetypes.guess_type(file_name)
+        if ctype is None or encoding is not None:
+            ctype = 'application/octet-stream'
+        maintype, subtype = ctype.split('/', 1)
+        
+        attachment = MIMEImage((lambda f: (f.read(), f.close())) \
+                (open(file_name, 'rb'))[0], _subtype =subtype)
+        attachment.add_header('Content-Disposition', 'attachment', filename=file_name)
+        msg.attach(attachment)
+
+    try:
+        smtp = smtplib.SMTP()
+        smtp.connect('smtp.ym.163.com', 25) 
+        smtp.login(msg['From'], 'zhoujb.19890211') 
+        smtp.sendmail(msg['From'], addressee, msg.as_string())
+    except Exception,e:
+        logger.exception('send_email: %s' % (str(e)))
 
 def _toHex(str,charset):
     s = str.encode(charset)
@@ -112,3 +143,5 @@ def send_sms(cellphone, text, retry_times=3):
         logger.error('send message to %s unsuccessfully:server error'%(cellphone,))
         send_sms(cellphone,text,retry_times)
 
+if __name__ == '__main__':
+    send_email_with_text('zhoujiebing@maimiaotech.com', 'text', 'subject')

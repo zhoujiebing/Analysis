@@ -52,7 +52,8 @@ class UserOrder:
         """写入文件"""
 
         self.file_obj = file(CURRENT_DIR+'data/order/order_'+self.article_code+str(date)+'.csv', 'w')
-        self.file_service_support = file(CURRENT_DIR+'data/support/support_'+self.article_code+str(date)+'.csv', 'w')
+        #服务支持没有必要存历史的记录
+        self.file_service_support = file(CURRENT_DIR+'data/support_'+self.article_code+'.csv', 'w')
         
         app_name = self.code_name[self.article_code] 
         for order in self.order_list:
