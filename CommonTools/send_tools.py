@@ -12,12 +12,13 @@
 import sys
 import json
 import time
-import smtplib
-import urllib,urllib2
+import smtplib, mimetypes
+import urllib, urllib2
 if __name__ == '__main__':
     sys.path.append('../')
 
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from CommonTools.logger import logger
 
