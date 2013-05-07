@@ -22,6 +22,8 @@ from DataAnalysis.conf.settings import CURRENT_DIR
 from tao_models.conf.settings import set_taobao_client
 set_taobao_client('12685542', '6599a8ba3455d0b2a043ecab96dfa6f9')
 from tao_models.vas_order_search import VasOrderSearch
+from shop_db.conf.settings import WORKER_DICT
+from shop_db.services.shop_db_service import ShopDBService
 
 class UserOrder:
 
@@ -68,7 +70,11 @@ class UserOrder:
             shangji = nick+'_'+app_name+'_'+str(order_end)
             self.file_obj.write('%s,%s,%s,%s,%s,%s,%d,订购使用中,每日更新,%s\n' % (nick, str(order_start),\
                     str(order_end), app_name, shop_search, self.order_type[biz_type], sale, shangji))
-            rand = hash(str(nick)) % 20
+            
+            #获取专属客服id
+            shop = ShopDBService.get_or_make_shop_by_nick(nick, self.article_code, order.order_cycle_end)
+            worker_id = shop['worker_id']
+            worker_name = WORKER_DICT[worker_id]
             order_time = order.order_cycle
             support_list = self.time_type[order_time]
             for days in support_list:
@@ -78,9 +84,9 @@ class UserOrder:
                 if days < 0:
                     support_time = order_end-datetime.timedelta(days=-days)
                     priority = '高'
-                support_name = app_name+'_'+support+'_'+str(support_time)+'_'+str(rand)
-                self.file_service_support.write('%s,%s,%s,%s,%s,%s,%d,新建,后台发掘\n' % \
-                        (nick, support_name, priority, app_name, support, str(support_time), rand))
+                support_name = app_name+'_'+support+'_'+str(support_time)+'_'+str(worker_name)
+                self.file_service_support.write('%s,%s,%s,%s,%s,%s,%s,新建,后台发掘\n' % \
+                        (nick, support_name, priority, app_name, support, str(support_time), worker_name))
                 
         self.file_obj.close()
         self.file_service_support.close()
