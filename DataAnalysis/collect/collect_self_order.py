@@ -48,13 +48,15 @@ class UserOrder:
 
         self.order_list = VasOrderSearch.search_vas_order_yesterday(self.article_code)
 
-    def write_order(self, date):
+    def write_order(self, date, lost_flag=False):
         """写入文件"""
 
         self.file_obj = file(CURRENT_DIR+'data/order/order_'+self.article_code+str(date)+'.csv', 'w')
         #服务支持没有必要存历史的记录
-        self.file_service_support = file(CURRENT_DIR+'data/support_'+self.article_code+'.csv', 'w')
-        
+        if not lost_flag:
+            self.file_service_support = file(CURRENT_DIR+'data/support_'+self.article_code+'.csv', 'w')
+        else:
+            self.file_service_support = file(CURRENT_DIR+'data/lost_support_'+self.article_code+'.csv', 'a')
         app_name = self.code_name[self.article_code] 
         for order in self.order_list:
             nick = order.nick
@@ -92,10 +94,10 @@ def collect_lost_order(start_date, end_date):
         start_created = datetime.datetime.combine(start_date, datetime.time())
         syb = UserOrder('ts-1796606')
         syb.get_lost_order(start_created, start_created+datetime.timedelta(days=1))
-        syb.write_order(start_date)
+        syb.write_order(start_date, True)
         xcw = UserOrder('ts-1797607')
         xcw.get_lost_order(start_created, start_created+datetime.timedelta(days=1))
-        xcw.write_order(start_date)
+        xcw.write_order(start_date, True)
         print '抓取 ' + str(start_date) + '的订单成功'
         start_date += datetime.timedelta(days=1)
         time.sleep(20)
@@ -111,5 +113,5 @@ def collect_self_order_script():
     xcw.write_order(yesterday)
 
 if __name__ == '__main__':
-    #collect_lost_order(datetime.date(2013,2,27), datetime.date(2013,2,28))
+    #collect_lost_order(datetime.date(2013,4,28), datetime.date(2013,5,2))
     collect_self_order_script()
