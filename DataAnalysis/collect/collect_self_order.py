@@ -22,8 +22,8 @@ from DataAnalysis.conf.settings import CURRENT_DIR
 from tao_models.conf.settings import set_taobao_client
 set_taobao_client('12685542', '6599a8ba3455d0b2a043ecab96dfa6f9')
 from tao_models.vas_order_search import VasOrderSearch
-from shop_db.conf.settings import WORKER_DICT
-from shop_db.services.shop_db_service import ShopDBService
+from user_center.conf.settings import WORKER_DICT
+from user_center.services.shop_db_service import ShopDBService
 
 class UserOrder:
 
