@@ -13,7 +13,7 @@ import os
 import sys
 import datetime
 if __name__ == '__main__':
-    sys.path.append('/home/zhoujiebing/Analysis/')
+    sys.path.append('../../')
 
 from DataAnalysis.conf.settings import logger, CURRENT_DIR
 from DBModel.shop_db import Shop 
