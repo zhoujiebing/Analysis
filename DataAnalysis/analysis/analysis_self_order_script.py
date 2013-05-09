@@ -15,7 +15,7 @@ import sys
 import datetime
 
 if __name__ == '__main__':
-    sys.path.append('/home/zhoujiebing/Analysis/')
+    sys.path.append('../../')
 
 from DataAnalysis.conf.settings import CURRENT_DIR
 from CommonTools.self_order_tools import SelfOrder
