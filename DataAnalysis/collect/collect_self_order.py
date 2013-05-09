@@ -81,7 +81,7 @@ class UserOrder:
                     support_time = order_end-datetime.timedelta(days=-days)
                     priority = '高'
                 support_name = app_name+'_'+support+'_'+str(support_time)+'_'+str(rand)
-                self.file_service_support.write('%s,%s,%s,%s,%s,%s,%d,新建,后台发掘\n' % \
+                self.file_service_support.write('%s,%s,%s,%s,%s,%s,%d,未回访,后台发掘\n' % \
                         (nick, support_name, priority, app_name, support, str(support_time), rand))
                 
         self.file_obj.close()
