@@ -15,7 +15,7 @@ import urllib2
 import datetime
 
 if __name__ == '__main__':
-    sys.path.append('/home/zhoujiebing/Analysis/')
+    sys.path.append('../../')
 
 from DataAnalysis.conf.settings import CURRENT_DIR
 from CommonTools.ztc_order_tools import ZtcOrder, SOFT_CODE

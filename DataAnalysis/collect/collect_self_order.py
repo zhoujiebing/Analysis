@@ -13,7 +13,7 @@ import os
 import sys
 import time
 if __name__ == '__main__':
-    sys.path.append('/home/zhoujiebing/Analysis/')
+    sys.path.append('../../')
 
 import datetime
 from CommonTools.logger import logger

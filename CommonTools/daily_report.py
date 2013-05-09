@@ -4,7 +4,7 @@
 import os
 import subprocess
 
-file_path = '/home/zhoujiebing/Analysis/'
+file_path = '../../'
 collect_report = os.path.join(file_path, 'DataAnalysis/collect/collect_report.py')
 analysis_report = os.path.join(file_path, 'DataAnalysis/analysis/analysis_campaign_script.py')
 collect_self_order = os.path.join(file_path, 'DataAnalysis/collect/collect_self_order.py')
