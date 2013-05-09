@@ -112,15 +112,17 @@ class CollectSYBReport(CollectReport):
             shop_info = shop_info_dict.get(shop['_id'], None)
             if not shop_info:
                 continue
-            shop['days'] = 15
+            shop_info['days'] = 30
             if shop.has_key('auto_campaign_id'):
                 shop_info[shop['auto_campaign_id']] = '省油宝长尾计划'
+            if shop.get('auto_campaign_init_time', None):
                 shop_info['auto_campaign_days'] = (time_now - shop['auto_campaign_init_time']).days
             if shop.has_key('key_campaign_id'):
                 shop_info[shop['key_campaign_id']] = '省油宝加力计划'
+            if shop.get('key_campaign_init_time', None):
                 shop_info['key_campaign_days'] = (time_now - shop['key_campaign_init_time']).days
-            use_days = max(shop_info.get('auto_campaign_days', 0), shop_info.get('key_campaign_days', 0))
-            shop['days'] = min(shop['days'], use_days)
+            use_days = min(shop_info.get('auto_campaign_days', 0), shop_info.get('key_campaign_days', 0))
+            shop_info['days'] = min(shop_info['days'], use_days)
             shop_list.append(shop_info)
         
         return shop_list
@@ -134,11 +136,12 @@ class CollectSYBReport(CollectReport):
         file_obj.close()
 
 def collect_report_script():
+    today = datetime.date.today()
+    syb_obj = CollectSYBReport(today)
+    syb_obj.collect_report()
+    syb_obj.write_report()
     try:
-        today = datetime.date.today()
-        syb_obj = CollectSYBReport(today)
-        syb_obj.collect_report()
-        syb_obj.write_report()
+        pass
     except Exception,e:
         logger.exception('collect_report_script error: %s', str(e))
         send_sms('13738141586', 'collect_report_script error: %s' % (str(e)))

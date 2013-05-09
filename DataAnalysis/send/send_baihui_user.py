@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
 import datetime
 from CommonTools.logger import logger
-from CommonTools.send_tools import send_sms
+from CommonTools.send_tools import send_sms, send_email_with_file
 from DataAnalysis.conf.settings import CURRENT_DIR
 from user_center.conf.settings import WORKER_DICT
 from user_center.services.shop_db_service import ShopDBService
@@ -25,7 +25,8 @@ from user_center.services.shop_db_service import ShopDBService
 def send_update_user(limit_time):
     """获取需要同步到百会的卖家信息"""
     
-    file_obj = file(CURRENT_DIR+'data/update_user.csv', 'w')
+    file_name = CURRENT_DIR+'data/update_user.csv'
+    file_obj = file(file_name, 'w')
     update_list = ShopDBService.get_update_shop_list(limit_time)
     file_obj.write('卖家,电话,姓名,专属客服\n')
     for shop in update_list:
@@ -39,9 +40,11 @@ def send_update_user(limit_time):
         print '%(nick)s, %(seller_mobile)s, %(seller_name)s, %(worker_name)s' % (shop)
         file_obj.write('%(nick)s, %(seller_mobile)s, %(seller_name)s, %(worker_name)s\n' % (shop))
     file_obj.close()
-
+    content = '更新部分卖家信息'
+    subject = '更新部分卖家信息'
+    send_email_with_file('zhoujiebing@maimiaotech.com', content, subject, [file_name])
         
 if __name__ == '__main__':
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
     limit_time = datetime.datetime.combine(yesterday, datetime.time())
-    send_update_user()
+    send_update_user(limit_time)
