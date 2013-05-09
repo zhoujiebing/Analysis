@@ -13,7 +13,7 @@ import os
 import sys
 import datetime
 if __name__ == '__main__':
-    sys.path.append('/home/zhoujiebing/Analysis/')
+    sys.path.append('../../')
 
 from CommonTools.send_tools import send_email_with_text, send_sms
 from CommonTools.logger import logger

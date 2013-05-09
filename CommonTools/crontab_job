@@ -1,7 +1,11 @@
-*/10 * * * * python /home/zhoujiebing/Analysis/DataMonitor/monitor/monitor_soft_script.py
-00 9 * * * python /home/zhoujiebing/Analysis/DataAnalysis/analysis/analysis_ztc_order_script.py 
-30 0 * * * python /home/zhoujiebing/Analysis/DataAnalysis/collect/collect_order_script.py 1
-30 6 * * * python /home/zhoujiebing/Analysis/DataAnalysis/collect/collect_order_script.py 
-30 12 * * * python /home/zhoujiebing/Analysis/DataAnalysis/collect/collect_order_script.py 
-30 18 * * * python /home/zhoujiebing/Analysis/DataAnalysis/collect/collect_order_script.py 
-00 10 * * * python /home/zhoujiebing/Analysis/CommonTools/daily_report.py
+HOME=/home/zhoujiebing/Analysis/DataMonitor/monitor/
+*/10 * * * * python monitor_soft_script.py
+HOME=/home/zhoujiebing/Analysis/DataAnalysis/analysis/
+30 9 * * * python analysis_ztc_order_script.py 
+HOME=/home/zhoujiebing/Analysis/DataAnalysis/collect/
+30 0 * * * python collect_order_script.py 1
+30 6 * * * python collect_order_script.py 
+30 12 * * * python collect_order_script.py 
+30 18 * * * python collect_order_script.py 
+HOME=/home/zhoujiebing/CommonTools/
+00 10 * * * python daily_report.py

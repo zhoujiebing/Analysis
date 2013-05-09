@@ -15,7 +15,7 @@ import sys
 import datetime
 
 if __name__ == '__main__':
-    sys.path.append('/home/zhoujiebing/Analysis/')
+    sys.path.append('../../')
 
 from DataAnalysis.conf.settings import CURRENT_DIR
 from CommonTools.ztc_order_tools import ZtcOrder, SOFT_CODE
@@ -162,8 +162,8 @@ def analysis_ztc_order_script():
         ztc.make_report()
         ztc.write_report()
         html = ztc.getHtml()
-        #send_email_with_html(ToMe, html, str(datetime.date.today())+'__直通车软件报表内侧版')
-        send_email_with_html(ToAll, html, str(datetime.date.today())+'__直通车软件报表公测版')
+        send_email_with_html(ToMe, html, str(datetime.date.today())+'__直通车软件报表内侧版')
+        #send_email_with_html(ToAll, html, str(datetime.date.today())+'__直通车软件报表公测版')
     except Exception,e:
         logger.exception('analysis_ztc_order_script error: %s' % (str(e)))
         send_sms('13738141586', 'analysis_ztc_order_script error: '+str(e))

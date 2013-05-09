@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger()
 import datetime
 if __name__ == '__main__':
-    sys.path.append('/home/zhoujiebing/Analysis/')
+    sys.path.append('../../')
 
 import DataMonitor.conf.settings
 from CommonTools.send_tools import send_sms
@@ -46,6 +46,7 @@ def monitor_soft():
     if current_time.hour in rest_hours:
         return None
      
+    #marketing_info = ''
     marketing_info = monitor_marketing_cost()
     order_info = monitor_order_add('省油宝', 'ts-1796606')
     comment_info = monitor_comment_add('省油宝', 'ts-1796606') + monitor_comment_add('北斗', 'ts-1797607')
@@ -55,7 +56,7 @@ def monitor_soft():
         send_sms('13738141586', return_info)
         
         #send XJ
-        send_sms('18658818166', return_info)
+        #send_sms('18658818166', return_info)
         if comment_info:
             #send LW
             send_sms('15158877255', comment_info)

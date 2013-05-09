@@ -13,7 +13,7 @@ import os
 import sys
 import time
 if __name__ == '__main__':
-    sys.path.append('/home/zhoujiebing/Analysis/')
+    sys.path.append('../../')
 
 import datetime
 from CommonTools.logger import logger
@@ -86,9 +86,9 @@ class UserOrder:
                 if days < 0:
                     support_time = order_end-datetime.timedelta(days=-days)
                     priority = '高'
-                support_name = app_name+'_'+support+'_'+str(support_time)+'_'+str(worker_name)
-                self.file_service_support.write('%s,%s,%s,%s,%s,%s,%s,新建,后台发掘\n' % \
-                        (nick, support_name, priority, app_name, support, str(support_time), worker_name))
+                support_name = app_name+'_'+support+'_'+str(support_time)+'_'+str(rand)
+                self.file_service_support.write('%s,%s,%s,%s,%s,%s,%d,未回访,后台发掘\n' % \
+                        (nick, support_name, priority, app_name, support, str(support_time), rand))
                 
         self.file_obj.close()
         self.file_service_support.close()
