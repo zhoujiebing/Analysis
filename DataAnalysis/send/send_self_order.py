@@ -29,8 +29,8 @@ def send_add_order_and_support():
     merge_support = []
     order_head = CURRENT_DIR+'data/order_head.csv'
     support_head = CURRENT_DIR+'data/support_head.csv'
-    send_order = CURRENT_DIR+'data/send_order.csv'
-    send_support = CURRENT_DIR+'data/send_support.csv'
+    send_order = CURRENT_DIR+'data/new_order.csv'
+    send_support = CURRENT_DIR+'data/new_support.csv'
 
     merge_order.append(CURRENT_DIR+'data/order.csv')
     merge_support.append(CURRENT_DIR+'data/support.csv')

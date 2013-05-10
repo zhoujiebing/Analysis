@@ -12,12 +12,13 @@
 import pymongo
 
 if __name__ == '__main__':
-    #CommonInfo
-    dest_conn = pymongo.Connection(port=2007)
-    dest_conn.drop_database('CommonInfo')
-    dest_conn.copy_database('CommonInfo', 'CommonInfo', 'syb.maimiaotech.com:1990')
      
-    #user_center
-    dest_conn = pymongo.Connection(port=2201)
-    dest_conn.drop_database('user_center')
-    dest_conn.copy_database('user_center', 'user_center', 'xcw.maimiaotech.com:2011')
+    #syb common_info
+    dest_conn = pymongo.Connection(host='wp.maimiaotech.com', port=2007)
+    dest_conn.drop_database('CommonInfo')
+    dest_conn.copy_database('CommonInfo', 'CommonInfo', 'syb.maimiaotech.com:2011')
+
+    #bd common_info
+    dest_conn = pymongo.Connection(host='wp.maimiaotech.com', port=1996)
+    dest_conn.drop_database('CommonInfo')
+    dest_conn.copy_database('CommonInfo', 'CommonInfo', 'xcw.maimiaotech.com:27017')
