@@ -101,6 +101,10 @@ class Shop(object):
     def store_shop_to_center(cls, nick, article_code, deadline):
         """存储用户数据到数据中心"""
         
+        if article_code == 'ts-1797607':
+            soft_code = 1
+        elif article_code == 'ts-1796606':
+            soft_code = 2
         shop_info = Shop.get_shop_info_by_nick(soft_code, nick)
         if not shop_info:
             return 0
