@@ -35,6 +35,24 @@ class Shop(object):
             return ShopServiceSYB.get_shop_status_by_sid(int(shop_id))
 
     @classmethod
+    def get_shop_info_by_nick(cls, soft_code, nick):
+        """根据nick获得店铺基本信息"""
+
+        if soft_code == 1:
+            return ShopServiceXCW.get_shop_info_by_nick(nick)
+        elif soft_code == 2:
+            return ShopServiceSYB.get_shop_info_by_nick(nick)
+
+    @classmethod
+    def get_shop_status_by_nick(cls, soft_code, nick):
+        """根据nick获得店铺设置信息"""
+
+        if soft_code == 1:
+            return ShopServiceXCW.get_shop_status_by_nick(nick)
+        elif soft_code == 2:
+            return ShopServiceSYB.get_shop_status_by_nick(nick)
+
+    @classmethod
     def get_all_shop_info(cls, soft_code):
         """获取所有shop_info"""
         
@@ -73,22 +91,35 @@ class Shop(object):
 
         pass
     
+
+    @classmethod
+    def get_seller_info(cls, soft_code, nick):
+        shop_info = Shop.get_shop_info_by_nick(soft_code, nick)
+        if not shop_info:
+            return 0
+        shop_status = Shop.get_shop_status_by_nick(soft_code, nick)
+        if shop_status.get('session_expired', False) or shop_status.get('insuff_level', False):
+            return 0
+        if soft_code == 2:
+            seller = ShopServiceSYB.get_seller_info_by_nick(nick, shop_info['access_token'])
+        elif soft_code == 1:
+            seller = ShopServiceXCW.get_seller_info_by_nick(nick, shop_info['access_token'])
+        
+        return seller
+
     @classmethod
     def store_shop_to_center(cls, nick, article_code, deadline):
         """存储用户数据到数据中心"""
         
+        
         if article_code == 'ts-1796606':
-            shop_info = ShopServiceSYB.get_shop_info_by_nick(nick)
-            if not shop_info:
-                return None
-            seller = ShopServiceSYB.get_seller_info_by_nick(nick, shop_info['access_token'])
+            soft_code = 2
         elif article_code == 'ts-1797607':
-            shop_info = ShopServiceXCW.get_shop_info_by_nick(nick)
-            if not shop_info:
-                return None
-            seller = ShopServiceXCW.get_seller_info_by_nick(nick, shop_info['access_token'])
-
+            soft_code = 1
         shop = {'nick':str(nick), 'sid':int(shop_info['_id'])}
+        seller = Shop.get_seller_info(soft_code, nick)
+        if seller == 0:
+            return None
         if seller:
             shop['seller_mobile'] = seller.get('seller_mobile', '')
             shop['seller_name'] = seller.get('seller_name', '')
