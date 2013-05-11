@@ -107,17 +107,17 @@ class Shop(object):
             soft_code = 2
         shop_info = Shop.get_shop_info_by_nick(soft_code, nick)
         if not shop_info:
-            return 0
+            return 1
         shop_status = Shop.get_shop_status_by_nick(soft_code, nick)
         if shop_status.get('session_expired', True) or shop_status.get('insuff_level', True):
-            return 0
+            return 2
         try:
             if article_code == 'ts-1796606':
                 seller = ShopServiceSYB.get_seller_info_by_nick(nick, shop_info['access_token'])
             elif article_code == 'ts-1797607':
                 seller = ShopServiceXCW.get_seller_info_by_nick(nick, shop_info['access_token'])
         except InvalidAccessTokenException, e:
-            return 0
+            return 3
         shop = {'nick':str(nick), 'sid':int(shop_info['_id'])}
         if seller:
             shop['seller_mobile'] = seller.get('seller_mobile', '')
