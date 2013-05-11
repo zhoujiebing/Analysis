@@ -98,27 +98,17 @@ class Shop(object):
         return seller
 
     @classmethod
-    def store_shop_to_center(cls, nick, article_code, deadline):
+    def store_shop_to_center(cls, nick, sid, article_code, deadline, access_token):
         """存储用户数据到数据中心"""
         
-        if article_code == 'ts-1797607':
-            soft_code = 1
-        elif article_code == 'ts-1796606':
-            soft_code = 2
-        shop_info = Shop.get_shop_info_by_nick(soft_code, nick)
-        if not shop_info:
-            return 1
-        shop_status = Shop.get_shop_status_by_nick(soft_code, nick)
-        if not shop_status or shop_status.get('session_expired', True) or shop_status.get('insuff_level', True):
-            return 2
+        shop = {'nick':str(nick), 'sid':int(sid)}
         try:
             if article_code == 'ts-1796606':
-                seller = ShopServiceSYB.get_seller_info_by_nick(nick, shop_info['access_token'])
+                seller = ShopServiceSYB.get_seller_info_by_nick(nick, access_token)
             elif article_code == 'ts-1797607':
-                seller = ShopServiceXCW.get_seller_info_by_nick(nick, shop_info['access_token'])
+                seller = ShopServiceXCW.get_seller_info_by_nick(nick, access_token)
         except InvalidAccessTokenException, e:
-            return 3
-        shop = {'nick':str(nick), 'sid':int(shop_info['_id'])}
+            return None
         if seller:
             shop['seller_mobile'] = seller.get('seller_mobile', '')
             shop['seller_name'] = seller.get('seller_name', '')

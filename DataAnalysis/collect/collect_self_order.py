@@ -41,15 +41,45 @@ class UserOrder:
     def get_lost_order(self, start_created, end_created):
         """获取某段时间的订单
         date 是datetime.datetime(2013,2,18,0,0,0) 这种类型"""
+        
+        bd_shops_status = Shop.get_all_shop_status(1)
+        bd_shops_info = Shop.get_all_shop_info(1)
+        syb_shops_status = Shop.get_all_shop_status(2)
+        syb_shops_info = Shop.get_all_shop_info(2)
+        
+        bd_info_dict = {}
+        syb_info_dict = {}
+        for info in bd_shops_info:
+            bd_info_dict[info.get('nick', '')] = info
+        for info in syb_shops_info:
+            syb_info_dict[info.get('nick', '')] = info
+
+        user_ok = {}
+        for shop in bd_shops_status:
+            if shop.get('session_expired', True) or shop.get('insuff_level', True):
+                continue
+            user_ok[shop['nick']+'ts-1797607'] = bd_info_dict.get(shop['nick'], False)
+
+        for shop in syb_shops_status:
+            if shop.get('session_expired', True) or shop.get('insuff_level', True):
+                continue
+            user_ok[shop['nick']+'ts-1796606'] = syb_info_dict.get(shop['nick'], False)
+
         all_order = OrderDBService.get_orders_between_time(start_created, end_created)
         orders_dict = {}
         for order in all_order:
+            key = order['nick'] + order['article_code']
+            info = user_ok.get(key, False)
+            if not info:
+                continue
+            order['sid'] = info['_id']
+            order['access_token'] = info['access_token']
             if order['order_end'] < self.time_now - datetime.timedelta(days=4):
                 continue
-            old_order = orders_dict.get(order['nick']+order['article_code'], \
-                    {'order_end':datetime.datetime(2011, 1, 1, 0, 0)})
+            old_order = orders_dict.get(key, {'order_end':datetime.datetime(2011, 1, 1, 0, 0)})
             if order['order_end'] > old_order['order_end']:
-                orders_dict[order['nick']+order['article_code']] = order
+                orders_dict[key] = order
+
         self.order_list = orders_dict.values()
         self.order_list.sort(key=lambda order:order['article_code'])
 
@@ -85,16 +115,9 @@ class UserOrder:
                 if tao_client_flag != order['article_code']:
                     tao_client_flag = order['article_code']
                     set_tao_client(order['article_code'])
-                shop = Shop.store_shop_to_center(order['nick'], \
-                            order['article_code'], order['order_end']) 
-            if shop == 1:
-                print '没有找到 %s,%s的shop_info信息' % (order['nick'], order['article_code'])
-                continue
-            elif shop == 2:
-                print '该用户已过期 %s,%s' % (order['nick'], order['article_code'])
-                continue
-            elif shop == 3:
-                print 'Access_token错误 %s,%s' % (order['nick'], order['article_code'])
+                shop = Shop.store_shop_to_center(order['nick'], order['sid'], order['article_code'], order['order_end'], order['access_token']) 
+            if not shop:
+                print '无效用户 %s,%s' % (order['nick'], order['article_code'])
                 continue
             worker_id = shop['worker_id']
             worker_id = shop['worker_id']
@@ -119,7 +142,7 @@ class UserOrder:
                 
                 if support_time < self.time_now:
                     continue
-                support_name = order['app_name']+'_'+support+'_'+str(support_time)+'_'+worker_name
+                support_name = order['app_name']+'_'+support+'_'+str(support_time)
                 self.file_service_support.write('%s,%s,%s,%s,%s,%s,%s,未回访,后台发掘\n' % \
                         (order['nick'], support_name, priority, order['app_name'], support, str(support_time), worker_name))
                 
