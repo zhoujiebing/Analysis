@@ -85,15 +85,19 @@ class UserOrder:
                 if tao_client_flag != order['article_code']:
                     tao_client_flag = order['article_code']
                     set_tao_client(order['article_code'])
-                try:
-                    shop = Shop.store_shop_to_center(order['nick'], \
+                shop = Shop.store_shop_to_center(order['nick'], \
                             order['article_code'], order['order_end']) 
-                except Exception,e:
-                    print order['nick'] + ':' + str(e)
-                    continue
-            if not shop:
-                print '没有找到%s,%s的shop信息' % (order['nick'], order['article_code'])
+            if shop == 1:
+                print '没有找到 %s,%s的shop_info信息' % (order['nick'], order['article_code'])
                 continue
+            elif shop == 2:
+                print '该用户已过期 %s,%s' % (order['nick'], order['article_code'])
+                continue
+            elif shop == 3:
+                print 'Access_token错误 %s,%s' % (order['nick'], order['article_code'])
+                continue
+            worker_id = shop['worker_id']
+            worker_id = shop['worker_id']
             worker_id = shop['worker_id']
             worker_name = WORKER_DICT[worker_id]
             order['worker_name'] = worker_name
@@ -139,5 +143,5 @@ def collect_self_order_script():
     order_obj.write_order()
 
 if __name__ == '__main__':
-    collect_lost_order(datetime.date(2013,5,7), datetime.date(2013,5,9))
-    #collect_self_order_script()
+    #collect_lost_order(datetime.date(2012,10,1), datetime.date(2013,5,10))
+    collect_self_order_script()
