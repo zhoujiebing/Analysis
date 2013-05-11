@@ -46,8 +46,8 @@ def monitor_soft():
     if current_time.hour in rest_hours:
         return None
      
-    #marketing_info = ''
-    marketing_info = monitor_marketing_cost()
+    marketing_info = ''
+    #marketing_info = monitor_marketing_cost()
     order_info = monitor_order_add('省油宝', 'ts-1796606')
     comment_info = monitor_comment_add('省油宝', 'ts-1796606') + monitor_comment_add('北斗', 'ts-1797607')
     return_info = marketing_info + order_info + comment_info 

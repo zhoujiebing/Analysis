@@ -16,7 +16,7 @@ if __name__ == '__main__':
     #syb common_info
     dest_conn = pymongo.Connection(host='wp.maimiaotech.com', port=2007)
     dest_conn.drop_database('CommonInfo')
-    dest_conn.copy_database('CommonInfo', 'CommonInfo', 'syb.maimiaotech.com:2011')
+    dest_conn.copy_database('CommonInfo', 'CommonInfo', 'syb.maimiaotech.com:2010')
 
     #bd common_info
     dest_conn = pymongo.Connection(host='wp.maimiaotech.com', port=1996)
