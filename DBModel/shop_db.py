@@ -109,7 +109,7 @@ class Shop(object):
         if not shop_info:
             return 1
         shop_status = Shop.get_shop_status_by_nick(soft_code, nick)
-        if shop_status.get('session_expired', True) or shop_status.get('insuff_level', True):
+        if not shop_status or shop_status.get('session_expired', True) or shop_status.get('insuff_level', True):
             return 2
         try:
             if article_code == 'ts-1796606':
