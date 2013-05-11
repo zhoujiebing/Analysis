@@ -100,6 +100,11 @@ class UserOrder:
         else:
             self.file_obj = file(CURRENT_DIR+'data/lost_order.csv', 'a')
             self.file_service_support = file(CURRENT_DIR+'data/lost_support.csv', 'a')
+        
+        shop_list = ShopDBService.get_all_shop_list()
+        shops_dict = {}
+        for shop in shop_list:
+            shops_dict[shop['nick']] = shop
 
         for order in self.order_list:
             if lost_flag and order['order_end'] < self.time_now - datetime.timedelta(days=4):
@@ -110,7 +115,7 @@ class UserOrder:
             order_end = order['order_end']
             order['end'] = datetime.date(order_end.year, order_end.month, order_end.day)
             order['shangji'] = order['nick']+'_'+order['app_name']+'_'+str(order['end'])
-            shop = ShopDBService.get_shop_by_nick(order['nick'])
+            shop = shops_dict.get(order['nick'], None)
             if not shop:
                 if tao_client_flag != order['article_code']:
                     tao_client_flag = order['article_code']

@@ -107,7 +107,7 @@ class Shop(object):
                 seller = ShopServiceSYB.get_seller_info_by_nick(nick, access_token)
             elif article_code == 'ts-1797607':
                 seller = ShopServiceXCW.get_seller_info_by_nick(nick, access_token)
-        except InvalidAccessTokenException, e:
+        except Exception, e:
             return None
         if seller:
             shop['seller_mobile'] = seller.get('seller_mobile', '')
