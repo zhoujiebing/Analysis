@@ -13,7 +13,7 @@ import datetime
 from xuancw.services.shop_service import ShopService as ShopServiceXCW
 from shengyb.service.shop_service import ShopService as ShopServiceSYB
 from user_center.services.shop_db_service import ShopDBService
-
+from tao_models.common.exceptions import InvalidAccessTokenException
 class Shop(object):
 
     @classmethod
@@ -109,13 +109,15 @@ class Shop(object):
         if not shop_info:
             return 0
         shop_status = Shop.get_shop_status_by_nick(soft_code, nick)
-        if shop_status.get('session_expired', False) or shop_status.get('insuff_level', False):
+        if shop_status.get('session_expired', True) or shop_status.get('insuff_level', True):
             return 0
-        if article_code == 'ts-1796606':
-            seller = ShopServiceSYB.get_seller_info_by_nick(nick, shop_info['access_token'])
-        elif article_code == 'ts-1797607':
-            seller = ShopServiceXCW.get_seller_info_by_nick(nick, shop_info['access_token'])
-        
+        try:
+            if article_code == 'ts-1796606':
+                seller = ShopServiceSYB.get_seller_info_by_nick(nick, shop_info['access_token'])
+            elif article_code == 'ts-1797607':
+                seller = ShopServiceXCW.get_seller_info_by_nick(nick, shop_info['access_token'])
+        except InvalidAccessTokenException, e:
+            return 0
         shop = {'nick':str(nick), 'sid':int(shop_info['_id'])}
         if seller:
             shop['seller_mobile'] = seller.get('seller_mobile', '')
