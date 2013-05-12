@@ -99,7 +99,7 @@ class UserCenter:
                 if not deadline:
                     continue
                 if deadline < self.time_now and shop[article_status] == '使用中':
-                    shop[article_order] = '到期'
+                    shop[article_status] = '到期'
                     upset_flag = True
                 if deadline > self.time_now:
                     normal_flag = True
