@@ -72,11 +72,13 @@ def analysis_campaign_simple(file_name):
     content = ''
     for key in soft_list:
         result = soft_statistics_dict[key]
+        if result.count <= 0:
+            continue
         content += key + '\n'
         content += '有效数(多天花费不为0)：%d, 多天花费为0数：%d\n' % (result.count, result.unnormal_count)
         content += '昨天 有效用户的平均花费：%.1f, 平均成交额：%.1f, 平均ROI：%.1f, 平均CPC：%.1f\n' % \
                 (result.sum_cost / result.count, result.sum_pay / result.count, \
-                result.sum_pay / result.sum_cost, result.sum_cost / result.sum_click)
+                result.sum_pay / result.sum_cost, result.sum_cost / result.sum_click / 100)
         content += '昨天 有效用户中ROI为0数：%d,   占比：%.2f\n' % (result.low_roi_count, \
                 result.low_roi_count / (result.count + 0.001))
         content += '多天 有效用户的平均花费：%.1f, 平均成交额：%.1f\n' % \

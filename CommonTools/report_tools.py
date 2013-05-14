@@ -66,7 +66,11 @@ class Report:
     @classmethod
     def merge_report(self, one_day_report, multi_day_report, shop, campaign=None):
         """聚合单天和多天报表"""
-
+        
+        if one_day_report['base'].has_key('failed_msg') or multi_day_report['base'].has_key('failed_msg'):
+            return None
+        if one_day_report['effect'].has_key('failed_msg') or multi_day_report['effect'].has_key('failed_msg'):
+            return None
         report = {}
         report['nick'] = shop['nick']
         report['sid'] = shop['sid']

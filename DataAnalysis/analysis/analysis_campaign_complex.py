@@ -73,7 +73,7 @@ def analysis_campaign_complex(file_name, campaign_name):
     content += '多天花费占全店多天花费比例 的平均值：%.2f,多天成交占全店多天成交比例的平均值：%.2f\n' %(sum_multi_cost_percent / unzero_cost, sum_multi_pay_percent / unzero_cost)
     content += '其中多天花费占比 不小于0.9的 比例：%.2f, 不小于0.5的 比例：%.2f\n' % (\
             float(multi_cost_percent_bigger_9)/unzero_cost , float(multi_cost_percent_bigger_5)/unzero_cost)
-    content += '所有多天花费占所有全店多天花费的比例：%.2f,所有多天成交占所有全店多天成交的比例：%.2f\n' %(sum_multi_cost / sum_shop_multi_cost, sum_multi_pay / sum_shop_multi_pay)
+    content += '所有多天花费占所有全店多天花费的比例：%.2f,所有多天成交占所有全店多天成交的比例：%.2f\n\n' %(sum_multi_cost / sum_shop_multi_cost, sum_multi_pay / sum_shop_multi_pay)
     #content += '多天ROI大于0的用户的平均多天ROI：%.1f\n' % (sum_multi_roi / multi_roi_unzero)
     return content
 

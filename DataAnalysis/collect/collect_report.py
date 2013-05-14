@@ -88,6 +88,8 @@ class CollectReport:
             except InvalidAccessTokenException,e:
                 logger.error('%s : InvalidAccessTokenException' % (shop['nick']))
                 continue
+            except Exception,e:
+                continue
             self.report_list.append(Report.merge_report(shop_report[0], multi_shop_report[0], shop))
             for i in range(len(campaigns_id)):
                 self.report_list.append(Report.merge_report(campaigns_report[i], multi_campaigns_report[i], shop, campaign_list[i]))
@@ -124,7 +126,7 @@ class CollectSYBReport(CollectReport):
                 shop_info[shop['key_campaign_id']] = '省油宝加力计划'
             if shop.get('key_campaign_init_time', None):
                 shop_info['key_campaign_days'] = (time_now - shop['key_campaign_init_time']).days
-            use_days = min(shop_info.get('auto_campaign_days', 0), shop_info.get('key_campaign_days', 0))
+            use_days = min(shop_info.get('auto_campaign_days', 1), shop_info.get('key_campaign_days', 1))
             shop_info['days'] = min(shop_info['days'], use_days)
             shop_list.append(shop_info)
         
@@ -135,7 +137,8 @@ class CollectSYBReport(CollectReport):
         
         file_obj = file(CURRENT_DIR+'data/report_data/report'+str(self.today)+'.csv', 'w')    
         for report in self.report_list:
-            file_obj.write(Report.to_string(report))
+            if report:
+                file_obj.write(Report.to_string(report))
         file_obj.close()
 
 def collect_report_script():
