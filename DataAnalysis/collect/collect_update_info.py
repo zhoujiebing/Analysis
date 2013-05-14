@@ -50,10 +50,10 @@ class UserCenter:
             if not order['article_code'] in self.article_code_list:
                 continue
             key = order['nick'] + order['article_code']
-            if order['order_end'] < self.time_now - datetime.timedelta(days=4):
+            if order['order_cycle_end'] < self.time_now - datetime.timedelta(days=4):
                 continue
-            old_order = self.user_order.get(key, {'order_start':datetime.datetime(2011, 1, 1, 0, 0)})
-            if order['order_start'] > old_order['order_start']:
+            old_order = self.user_order.get(key, {'order_cycle_start':datetime.datetime(2011, 1, 1, 0, 0)})
+            if order['order_cycle_start'] > old_order['order_cycle_start']:
                 self.user_order[key] = order
 
         for line in file(CURRENT_DIR+'data/worker_nick.csv'):
@@ -95,13 +95,10 @@ class UserCenter:
                 order_id = shop.get(article_order, 0)
                 
                 if order and order_id != order['order_id']:
-                    if order['order_type'] == '退订':
-                        shop[article_status] = '退款'
-                    else:
-                        order['worker_name'] = WORKER_DICT[worker_id]
-                        order['seller_name'] = shop.get('seller_name', '未找到')
-                        order['seller_mobile'] = shop.get('seller_mobile', '')
-                        self.update_orders.append(order)
+                    order['worker_name'] = WORKER_DICT[worker_id]
+                    order['seller_name'] = shop.get('seller_name', '未找到')
+                    order['seller_mobile'] = shop.get('seller_mobile', '')
+                    self.update_orders.append(order)
                    
                     if not deadline:
                         logger.info('%s 没有 deadline' % (shop['nick']))
@@ -136,12 +133,13 @@ class UserCenter:
         file_service_support = file(CURRENT_DIR+'data/support.csv', 'w')
         for order in self.update_orders:
             order['app_name'] = self.code_name[order['article_code']] 
-            order_start = order['order_start']
+            order_start = order['order_cycle_start']
             order['start'] = datetime.date(order_start.year, order_start.month, order_start.day)
-            order_end = order['order_end']
+            order_end = order['order_cycle_end']
             order['end'] = datetime.date(order_end.year, order_end.month, order_end.day)
             order['shangji'] = order['nick']+'_'+order['app_name']+'_'+str(order['end'])
-            
+            order['order_type'] = self.order_type[order['biz_type']]
+            order['sale'] = int(order['total_pay_fee']) / 100
             file_obj.write('%(nick)s,%(start)s,%(end)s,%(app_name)s,%(order_type)s,%(sale)d,订购使用中,每日更新,%(shangji)s,%(worker_name)s,%(seller_name)s,%(seller_mobile)s\n' % (order))
             #print '%(nick)s,%(start)s,%(end)s,%(app_name)s,%(order_type)s,%(sale)d,订购使用中,每日更新,%(shangji)s' % (order)
 
