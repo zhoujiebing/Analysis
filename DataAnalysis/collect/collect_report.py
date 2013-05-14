@@ -16,7 +16,7 @@ if __name__ == '__main__':
     sys.path.append('../../')
 
 from DataAnalysis.conf.settings import logger, CURRENT_DIR
-from DBModel.shop_db import Shop 
+from DataAnalysis.db_model.shop_db import Shop 
 from CommonTools.send_tools import send_sms
 from CommonTools.report_tools import Report
 from CommonTools.string_tools import parser_string_to_date

@@ -10,65 +10,62 @@
 
 """
 import datetime
-from xuancw.services.shop_service import ShopService as ShopServiceXCW
-from shengyb.service.shop_service import ShopService as ShopServiceSYB
+if __name__ == '__main__':
+    import sys
+    sys.path.append('../../')
+from DataAnalysis.conf.settings import syb_db, bd_db 
 from user_center.services.shop_db_service import ShopDBService
-from tao_models.common.exceptions import InvalidAccessTokenException
+
 class Shop(object):
 
+    syb_conn = syb_db['CommonInfo']
+    bd_conn = bd_db['CommonInfo']
+
     @classmethod
-    def get_shop_info(cls, soft_code, shop_id):
+    def get_shop_info_by_sid(cls, soft_code, shop_id):
         """根据shop_id获得店铺基本信息"""
 
-        if soft_code == 1:
-            return ShopServiceXCW.get_shop_info_by_sid(int(shop_id))
-        elif soft_code == 2:
-            return ShopServiceSYB.get_shop_info_by_sid(int(shop_id))
+        pass
 
     @classmethod
-    def get_shop_status(cls, soft_code, shop_id):
+    def get_shop_status_by_sid(cls, soft_code, shop_id):
         """根据shop_id获得店铺设置信息"""
 
-        if soft_code == 1:
-            return ShopServiceXCW.get_shop_status_by_sid(int(shop_id))
-        elif soft_code == 2:
-            return ShopServiceSYB.get_shop_status_by_sid(int(shop_id))
+        pass
 
     @classmethod
     def get_shop_info_by_nick(cls, soft_code, nick):
         """根据nick获得店铺基本信息"""
 
-        if soft_code == 1:
-            return ShopServiceXCW.get_shop_info_by_nick(nick)
-        elif soft_code == 2:
-            return ShopServiceSYB.get_shop_info_by_nick(nick)
+        pass
 
     @classmethod
     def get_shop_status_by_nick(cls, soft_code, nick):
         """根据nick获得店铺设置信息"""
 
-        if soft_code == 1:
-            return ShopServiceXCW.get_shop_status_by_nick(nick)
-        elif soft_code == 2:
-            return ShopServiceSYB.get_shop_status_by_nick(nick)
+        pass
 
     @classmethod
     def get_all_shop_info(cls, soft_code):
         """获取所有shop_info"""
-        
+            
         if soft_code == 1:
-            return ShopServiceXCW.get_all_shop_info_list()
+            shops_info = cls.bd_conn['shop_info'].find()
         elif soft_code == 2:
-            return ShopServiceSYB.get_all_shop_info_list()
+            shops_info = cls.syb_conn['shop_info'].find()
+        shops_info = [shop for shop in shops_info]
+        return shops_info
 
     @classmethod
     def get_all_shop_status(cls, soft_code):
         """获取所有shop_status"""
 
         if soft_code == 1:
-            return ShopServiceXCW.get_all_shop_status_list()
+            shops_status = cls.bd_conn['shop_status'].find()
         elif soft_code == 2:
-            return ShopServiceSYB.get_all_shop_status()
+            shops_status = cls.syb_conn['shop_status'].find()
+        shops_status = [shop for shop in shops_status]
+        return shops_status
 
     @classmethod
     def get_all_normal_shop_status_in_syb(cls):
@@ -85,18 +82,6 @@ class Shop(object):
 
         return normal_shop_list
     
-    @classmethod
-    def get_all_normal_shop_status_in_bd(cls):
-        """获取北斗的所有正常shop_status"""
-
-        pass
-    
-
-    @classmethod
-    def get_seller_info(cls, soft_code, nick):
-        
-        return seller
-
     @classmethod
     def store_shop_to_center(cls, nick, sid, article_code, deadline, access_token):
         """存储用户数据到数据中心"""
@@ -121,3 +106,7 @@ class Shop(object):
         shop['flag'] = True
         ShopDBService.upsert_shop(shop)
         return shop
+
+if __name__ == '__main__':
+    shops_info = Shop.get_all_shop_info(1) 
+    print len(shops_info)
