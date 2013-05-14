@@ -21,8 +21,9 @@ from CommonTools.send_tools import send_sms
 from CommonTools.report_tools import Report
 from CommonTools.string_tools import parser_string_to_date
 from report_db.services.rpt_sum_search_service import RptSumSearchService
-from tao_models.common.exceptions import InvalidAccessTokenException
+from tao_models.conf.settings import set_taobao_client
 from tao_models.simba_campaigns_get import SimbaCampaignsGet
+from tao_models.common.exceptions import InvalidAccessTokenException
 
 class CollectReport:
     
@@ -31,7 +32,6 @@ class CollectReport:
         self.end_time = self.today - datetime.timedelta(days=1)
         header = u'账户,计划,当天ROI,当天花费,成交额,当天点击,平均点击花费,成交笔数,收藏,当天转化率,多天ROI,多天花费,多天成交额,多天收藏,天数,店铺id\n'
         self.header = header.encode('utf-8')
-        self.syb_user = self._load_syb_user()
         
         self.end_date = date - datetime.timedelta(days=1)
         self.soft_code = None
@@ -77,7 +77,7 @@ class CollectReport:
                         {'base':True, 'effect':True}, True, shop)
                 
                 #目前使用API获取,以后可以改用使用db
-                campaigns = SimbaCampaignsGet.get_campaign_list(self.access_token, self.nick)
+                campaigns = SimbaCampaignsGet.get_campaign_list(shop['access_token'], shop['nick'])
                 campaign_list = [campaign.toDict() for campaign in campaigns]
                 campaigns_id = [campaign['campaign_id'] for campaign in campaign_list]
                 campaigns_report = RptSumSearchService.camp_rpt_sum_search(campaigns_id, shop['nick'], \
@@ -98,6 +98,7 @@ class CollectSYBReport(CollectReport):
     def __init__(self, date):
         CollectReport.__init__(self, date)
         self.soft_code = 2
+        set_taobao_client('12685542', '6599a8ba3455d0b2a043ecab96dfa6f9')
 
     def get_shop_list(self):
         """获取省油宝 shop_list"""
