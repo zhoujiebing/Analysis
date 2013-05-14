@@ -17,12 +17,12 @@ if __name__ == '__main__':
 
 from DataAnalysis.conf.settings import logger, CURRENT_DIR
 from DBModel.shop_db import Shop 
-from DBModel.campaign_db import Campaign
 from CommonTools.send_tools import send_sms
 from CommonTools.report_tools import Report
 from CommonTools.string_tools import parser_string_to_date
 from report_db.services.rpt_sum_search_service import RptSumSearchService
 from tao_models.common.exceptions import InvalidAccessTokenException
+from tao_models.simba_campaigns_get import SimbaCampaignsGet
 
 class CollectReport:
     
@@ -75,8 +75,10 @@ class CollectReport:
                 multi_shop_report = RptSumSearchService.cust_rpt_sum_search(shop['nick'], shop['sid'], \
                         end_date - datetime.timedelta(days=shop['days']), end_date,\
                         {'base':True, 'effect':True}, True, shop)
-
-                campaign_list = Campaign.get_shop_campaigns(self.soft_code, shop['access_token'], shop['nick'], shop['sid'])
+                
+                #目前使用API获取,以后可以改用使用db
+                campaigns = SimbaCampaignsGet.get_campaign_list(self.access_token, self.nick)
+                campaign_list = [campaign.toDict() for campaign in campaigns]
                 campaigns_id = [campaign['campaign_id'] for campaign in campaign_list]
                 campaigns_report = RptSumSearchService.camp_rpt_sum_search(campaigns_id, shop['nick'], \
                         shop['sid'], start_date, end_date, {'base':True, 'effect':True}, True, shop)
