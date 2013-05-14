@@ -168,7 +168,7 @@ class UserCenter:
         """更新用户中心"""
 
         for shop in self.update_shops:
-            ShopDBService.upsert_shop(shop)
+            ShopDBService.upset_shop(shop)
 
     def write_nick_worker(self):
         """将未更新的客服客户关系写回"""
