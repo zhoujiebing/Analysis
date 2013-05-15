@@ -43,6 +43,8 @@ class UserCenter:
         self.update_shops = []
         #要更新的服务支持
         self.update_supports = []
+        #百会导入
+        self.add_orders = []
 
     def collect_online_info(self):
         """获取用户数据中心信息"""
@@ -148,6 +150,8 @@ class UserCenter:
                     shop[article_code + '_deadline'] = deadline
                     shop[article_order] = order['order_id']
                     upset_flag = True
+                    #百会导入
+                    self.add_orders.append(order)
                 
                 if not deadline:
                     #压根没购买过
@@ -210,7 +214,7 @@ class UserCenter:
 
         file_obj = file(CURRENT_DIR+'data/order.csv', 'w')
         file_service_support = file(CURRENT_DIR+'data/support.csv', 'w')
-        for order in self.update_orders:
+        for order in self.add_orders: 
             order['app_name'] = self.code_name[order['article_code']] 
             order_start = order['order_cycle_start']
             order['start'] = datetime.date(order_start.year, order_start.month, order_start.day)
@@ -219,6 +223,12 @@ class UserCenter:
             order['shangji'] = order['nick']+'_'+order['app_name']+'_'+str(order['end'])
             order['order_type'] = self.order_type[order['biz_type']]
             order['sale'] = int(order['total_pay_fee']) / 100
+            
+            shop = self.nick_shop[order['nick']]
+            order['worker_name'] = WORKER_DICT[shop['worker_id']]
+            order['seller_name'] = shop.get('seller_name', '')
+            order['seller_mobile'] = shop.get('seller_mobile', '')
+
             file_obj.write('%(nick)s,%(start)s,%(end)s,%(app_name)s,%(order_type)s,%(sale)d,订购使用中,每日更新,%(shangji)s,%(worker_name)s,%(seller_name)s,%(seller_mobile)s\n' % (order))
             #print '%(nick)s,%(start)s,%(end)s,%(app_name)s,%(order_type)s,%(sale)d,订购使用中,每日更新,%(shangji)s' % (order)
 
@@ -265,7 +275,7 @@ def daily_update_script():
     user_obj = UserCenter(['ts-1796606'])
     user_obj.collect_online_info()
     user_obj.collect_update_info()
-    #user_obj.write_baihui_orders()
+    user_obj.write_baihui_orders()
     user_obj.update_online()
     user_obj.write_nick_worker()
 
