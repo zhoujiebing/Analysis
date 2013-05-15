@@ -9,6 +9,9 @@
 @copyright: Copyright maimiaotech.com
 
 """
+if __name__ == '__main__':
+    import sys
+    sys.path.append('../../')
 from CommonTools.report_tools import Report
 
 def analysis_campaign_complex(file_name, campaign_name):
@@ -26,6 +29,11 @@ def analysis_campaign_complex(file_name, campaign_name):
             if campaign['nick'] != shop['nick']:
                 print '出现不一致:',shop['nick']
             Report.add_shop(campaign, shop)
+            if campaign['count_days'] <= 0:
+                continue
+            if campaign['multi_cost'] > campaign['shop_multi_cost'] or \
+                    campaign['multi_pay'] > campaign['shop_multi_pay']:
+                continue
             campaign_list.append(campaign)
 
     zero_cost = 0
@@ -65,15 +73,15 @@ def analysis_campaign_complex(file_name, campaign_name):
                 multi_roi_bigger_2 += 1
 
     unzero_cost = len(campaign_list) - zero_cost
-    content = campaign_name + '的简单分析'
-    content += '用户数：%d,花费为0数：%d，花费不为0数：%d\n' % (len(campaign_list), zero_cost, unzero_cost)
-    content += '多天ROI大于0数：%d,占比：%.1f，多天ROI大于2数：%d，占比：%.1f\n' %(multi_roi_unzero,\
+    content = campaign_name + '的单独分析\n'
+    content += '用户数：%d,(计划多天) 花费为0数：%d，花费不为0数：%d\n' % (len(campaign_list), zero_cost, unzero_cost)
+    content += '(计划多天) ROI大于0数：%d,占比：%.1f，ROI大于2数：%d，占比：%.1f\n' %(multi_roi_unzero,\
             float(multi_roi_unzero) / unzero_cost, multi_roi_bigger_2, float(multi_roi_bigger_2) / unzero_cost)
-    content += '花费不为0的用户中\n'
-    content += '多天花费占全店多天花费比例 的平均值：%.2f,多天成交占全店多天成交比例的平均值：%.2f\n' %(sum_multi_cost_percent / unzero_cost, sum_multi_pay_percent / unzero_cost)
+    content += '计划多天花费不为0的用户中\n'
+    content += '(计划多天花费占全店多天花费比例)的平均值：%.2f,(计划多天成交占全店多天成交比例)的平均值：%.2f\n' %(sum_multi_cost_percent / unzero_cost, sum_multi_pay_percent / unzero_cost)
     content += '其中多天花费占比 不小于0.9的 比例：%.2f, 不小于0.5的 比例：%.2f\n' % (\
             float(multi_cost_percent_bigger_9)/unzero_cost , float(multi_cost_percent_bigger_5)/unzero_cost)
-    content += '所有多天花费占所有全店多天花费的比例：%.2f,所有多天成交占所有全店多天成交的比例：%.2f\n\n' %(sum_multi_cost / sum_shop_multi_cost, sum_multi_pay / sum_shop_multi_pay)
+    content += '所有计划多天花费占所有全店多天花费的比例：%.2f,所有计划多天成交占所有全店多天成交的比例：%.2f\n\n' %(sum_multi_cost / sum_shop_multi_cost, sum_multi_pay / sum_shop_multi_pay)
     #content += '多天ROI大于0的用户的平均多天ROI：%.1f\n' % (sum_multi_roi / multi_roi_unzero)
     return content
 
