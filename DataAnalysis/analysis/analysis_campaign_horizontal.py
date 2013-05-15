@@ -9,6 +9,10 @@
 @copyright: Copyright alibaba-inc.com
 
 """
+if __name__ == '__main__':
+    import sys
+    sys.path.append('../../')
+
 from CommonTools.report_tools import Report
 SOFT_LIST = ['省油宝长尾计划', '省油宝加力计划', '广撒网计划', '喜宝计划', '极品飞车', '懒人开车', '疯狂车手', '大麦']
 

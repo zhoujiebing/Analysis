@@ -28,12 +28,9 @@ from tao_models.common.exceptions import InvalidAccessTokenException
 class CollectReport:
     
     def __init__(self, date):
-        self.today = datetime.date.today()
-        self.end_time = self.today - datetime.timedelta(days=1)
+        self.today = date
         header = u'账户,计划,当天ROI,当天花费,成交额,当天点击,平均点击花费,成交笔数,收藏,当天转化率,多天ROI,多天花费,多天成交额,多天收藏,天数,店铺id\n'
         self.header = header.encode('utf-8')
-        
-        self.end_date = date - datetime.timedelta(days=1)
         self.soft_code = None
         self.shop_list = self.get_shop_list()
         self.report_list = []
@@ -64,8 +61,8 @@ class CollectReport:
     def collect_report(self):
         """搜集报表数据"""
 
-        start_date = self.end_date - datetime.timedelta(days=1)
-        end_date = self.end_date
+        start_date = self.today - datetime.timedelta(days=1)
+        end_date = start_date
         logger.info('start collect report')
         for shop in self.shop_list:
             logger.info('正在抓取帐号 %s 的报表信息' % shop['nick'])
@@ -78,8 +75,13 @@ class CollectReport:
                 
                 #目前使用API获取,以后可以改用使用db
                 campaigns = SimbaCampaignsGet.get_campaign_list(shop['access_token'], shop['nick'])
-                campaign_list = [campaign.toDict() for campaign in campaigns]
-                campaigns_id = [campaign['campaign_id'] for campaign in campaign_list]
+                campaigns_id = []
+                campaigns_dict = {}
+                for campaign in campaigns:
+                    campaign = campaign.toDict()
+                    campaigns_id.append(campaign['campaign_id'])
+                    campaigns_dict[campaign['campaign_id']] = campaign
+                
                 campaigns_report = RptSumSearchService.camp_rpt_sum_search(campaigns_id, shop['nick'], \
                         shop['sid'], start_date, end_date, {'base':True, 'effect':True}, True, shop)
                 multi_campaigns_report = RptSumSearchService.camp_rpt_sum_search(campaigns_id, shop['nick'], \
@@ -92,8 +94,12 @@ class CollectReport:
                 continue
             self.report_list.append(Report.merge_report(shop_report[0], multi_shop_report[0], shop))
             for i in range(len(campaigns_id)):
-                self.report_list.append(Report.merge_report(campaigns_report[i], multi_campaigns_report[i], shop, campaign_list[i]))
+                if campaigns_report[i]['campaignid'] != multi_campaigns_report[i]['campaignid']:
+                    logger.info('%s 出现单体计划报表与多天计划报表不一致' % shop['nick'])
+                self.report_list.append(Report.merge_report(campaigns_report[i], multi_campaigns_report[i], shop, campaigns_dict[campaigns_report[i]['campaignid']]))
+        
         logger.info('finish collect report')
+            
 
 class CollectSYBReport(CollectReport):
 
@@ -122,11 +128,14 @@ class CollectSYBReport(CollectReport):
                 shop_info[shop['auto_campaign_id']] = '省油宝长尾计划'
             if shop.get('auto_campaign_init_time', None):
                 shop_info['auto_campaign_days'] = (time_now - shop['auto_campaign_init_time']).days
+            
             if shop.has_key('key_campaign_id'):
                 shop_info[shop['key_campaign_id']] = '省油宝加力计划'
             if shop.get('key_campaign_init_time', None):
                 shop_info['key_campaign_days'] = (time_now - shop['key_campaign_init_time']).days
-            use_days = min(shop_info.get('auto_campaign_days', 1), shop_info.get('key_campaign_days', 1))
+            use_days = min(shop_info.get('auto_campaign_days', 0), shop_info.get('key_campaign_days', 0))
+            if use_days <= 0:
+                continue
             shop_info['days'] = min(shop_info['days'], use_days)
             shop_list.append(shop_info)
         

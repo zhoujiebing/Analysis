@@ -25,7 +25,7 @@ REPORT_KEYS = [
         ['multi_pay', float],
         ['multi_fav', int],
         ['count_days', int],
-        ['shop_id', str]]
+        ['sid', str]]
 
 class Report:
     
@@ -54,14 +54,23 @@ class Report:
 
         report_dict['multi_cost_percent'] = report_dict['multi_cost'] / (shop['multi_cost'] + 0.000001)
         report_dict['multi_pay_percent'] = report_dict['multi_pay'] / (shop['multi_pay'] + 0.000001)
-
+    
     @classmethod
     def to_string(self, report):
+        """与parser_report搭配使用效果更佳"""
+
         report['roi'] = report['pay'] / (report['cost'] + 0.01)
         report['multi_roi'] = report['multi_pay'] / (report['multi_cost'] + 0.01)
         report['conversion'] = report['pay_count'] / (report['click'] + 0.01)
-        report_str = '%(nick)s,%(name)s,%(roi).1f,%(cost)d,%(pay)d,%(click)d,%(cpc).1f,%(pay_count)d,%(fav_count)d,%(conversion).1f,%(multi_roi).1f,%(multi_cost)d,%(multi_pay)d,%(multi_fav_count)d,%(multi_days)d,%(sid)d\n' % (report)
-        return report_str
+        report_str = []
+        for key_type in REPORT_KEYS:
+            key = key_type[0]
+            report_str.append(str(report[key]))
+        return ','.join(report_str) + '\n'
+
+        #月光下的湖,省油宝长尾计划,0.0,5725,0,44,130.0,0,0,0.0,0.4,44188,16000,9,21,33426264
+        #report_str = '%(nick)s,%(name)s,%(roi).1f,%(cost)d,%(pay)d,%(click)d,%(cpc).1f,%(pay_count)d,%(fav_count)d,%(conversion).1f,%(multi_roi).1f,%(multi_cost)d,%(multi_pay)d,%(multi_fav_count)d,%(multi_days)d,%(sid)d\n' % (report)
+        #return report_str
 
     @classmethod
     def merge_report(self, one_day_report, multi_day_report, shop, campaign=None):
@@ -84,16 +93,21 @@ class Report:
         report['multi_cost'] = multi_day_report['base']['cost']
 
         report['fav_count'] = one_day_report['effect']['favshopcount'] + one_day_report['effect']['favitemcount']
+        
         report['pay_count'] = one_day_report['effect']['indirectpaycount'] + one_day_report['effect']['directpaycount']
+        
         report['pay'] = one_day_report['effect']['indirectpay'] + one_day_report['effect']['directpay']
-        report['multi_fav_count'] = multi_day_report['effect']['favshopcount'] + multi_day_report['effect']['favitemcount']
-        report['multi_pay_count'] = multi_day_report['effect']['indirectpaycount'] + multi_day_report['effect']['directpaycount']
+        
+        report['multi_fav'] = multi_day_report['effect']['favshopcount'] + multi_day_report['effect']['favitemcount']
+        
+        #report['multi_pay_count'] = multi_day_report['effect']['indirectpaycount'] + multi_day_report['effect']['directpaycount']
+        
         report['multi_pay'] = multi_day_report['effect']['indirectpay'] + multi_day_report['effect']['directpay']
-        report['multi_days'] = shop['days']
-        report['name'] = '账户整体情况'
+        
+        report['count_days'] = shop['days']
+        report['campaign'] = '账户整体情况'
         if campaign:
-            report['name'] = shop.get(campaign['campaign_id'], campaign['title'])
-            report['name'] = report['name'].replace(',', '逗号')
+            report['campaign'] = shop.get(campaign['campaign_id'], campaign['title'])
+            report['campaign'] = report['campaign'].replace(',', '逗号')
         return report 
-
 
