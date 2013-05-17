@@ -133,7 +133,7 @@ class CollectSYBReport(CollectReport):
                 shop_info[shop['key_campaign_id']] = '省油宝加力计划'
             if shop.get('key_campaign_init_time', None):
                 shop_info['key_campaign_days'] = (time_now - shop['key_campaign_init_time']).days
-            use_days = min(shop_info.get('auto_campaign_days', 0), shop_info.get('key_campaign_days', 0))
+            use_days = max(shop_info.get('auto_campaign_days', 0), shop_info.get('key_campaign_days', 0))
             if use_days <= 0:
                 continue
             shop_info['days'] = min(shop_info['days'], use_days)
