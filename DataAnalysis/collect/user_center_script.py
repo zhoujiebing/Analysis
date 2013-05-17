@@ -52,22 +52,17 @@ class UserCenter:
         #获取所有用户
         all_shop = ShopDBService.get_all_shop_list()
         self.nick_shop = {}        
-        
-        #获取所有订单
-        all_order = OrderDBService.get_all_orders_list()
-        self.user_order = {}
+        for shop in all_shop:
+            self.nick_shop[shop['nick']] = shop
         
         #获取所有退款
         all_refund = RefundDBService.get_all_refunds_list()
         refund_list = [refund['order_id'] for refund in all_refund]
         
-        #获取所有服务支持
-        all_support = SupportDBService.get_all_supports_list()
-        self.user_supports = {}
+        #获取所有订单
+        all_order = OrderDBService.get_all_orders_list()
+        self.user_order = {}
         
-        for shop in all_shop:
-            self.nick_shop[shop['nick']] = shop
-
         for order in all_order:
             if not order['article_code'] in self.article_code_list:
                 continue
@@ -78,6 +73,10 @@ class UserCenter:
             if order['order_cycle_start'] > old_order['order_cycle_start']:
                 self.user_order[key] = order
 
+        #获取所有服务支持
+        all_support = SupportDBService.get_all_supports_list()
+        self.user_supports = {}
+        
         for support in all_support:
             if not support['article_code'] in self.article_code_list:
                 continue
@@ -92,7 +91,7 @@ class UserCenter:
         for line in file(CURRENT_DIR+'data/worker_nick.csv'):
             line_data = line.split(',')
             worker_id = int(line_data[0])
-            nick = (line_data[1].split('\n'))[0]
+            nick = (line_data[1].split('\n'))[0].decode('utf-8')
             self.nick_worker[nick] = worker_id
     
     def collect_reset_supports(self):
@@ -105,6 +104,28 @@ class UserCenter:
             if support['occur_time'] < self.time_now:
                 continue
             self.update_supports.append(support)
+    
+    def collect_update_worker(self):
+        """更新客户客服关系"""
+
+        for nick in self.nick_worker.keys():
+            new_worker_id = self.nick_worker[nick]
+            shop = self.nick_shop.get(nick, None)
+            if not shop:
+                #要更新的用户 并不存在
+                logger.info('collect_update_worker %s not exist' % nick)
+                print 'collect_update_worker %s not exist' % nick
+                continue
+            if shop['worker_id'] != new_worker_id:
+                shop['worker_id'] = new_worker_id
+                shop['update_time'] = self.time_now
+                self.update_shops.append(shop)
+                for article_code in self.code_name.keys():
+                    key = nick+article_code
+                    order = self.user_order.get(key, None)
+                    if order:
+                        self.add_orders.append(order)
+
 
     def collect_update_info(self):
         """收集更新"""
@@ -118,13 +139,6 @@ class UserCenter:
             upset_flag = False
             normal_flag = False
             
-            #更新客服客户关系
-            if worker_id != self.nick_worker.get(shop['nick'], worker_id):
-                shop['worker_id'] = self.nick_worker[shop['nick']]
-                worker_id = shop['worker_id']
-                self.nick_worker[shop['nick']] = ''
-                upset_flag = True
-
             for article_code in self.code_name.keys():
                 key = shop['nick'] + article_code
                 article_status = article_code + '_status'
@@ -257,8 +271,9 @@ class UserCenter:
         for shop in self.update_shops:
             ShopDBService.upset_shop(shop)
         
-        for support in self.update_supports:
-            SupportDBService.upsert_support(support)
+        #由于目前用户中心没有独立的服务支持页面 可先不更新
+        #for support in self.update_supports:
+        #    SupportDBService.upsert_support(support)
 
     def write_nick_worker(self):
         """将未更新的客服客户关系写回"""
@@ -271,13 +286,18 @@ class UserCenter:
 
 def daily_update_script():
     """更新user_center 并将更新导入到百会CRM"""
-    
-    user_obj = UserCenter(['ts-1796606'])
-    user_obj.collect_online_info()
-    user_obj.collect_update_info()
-    user_obj.write_baihui_orders()
-    user_obj.update_online()
-    user_obj.write_nick_worker()
+    logger.info('user_center update start') 
+    try:
+        user_obj = UserCenter(['ts-1796606'])
+        user_obj.collect_online_info()
+        user_obj.collect_update_info()
+        user_obj.write_baihui_orders()
+        user_obj.update_online()
+    except Exception,e:
+        logger.exception('user_center update error: %s', str(e))
+        send_sms('13738141586', 'user_center update error: '+str(e))
+    else:
+        logger.info('user_center update finish')
 
 def reset_useful_support_script():
     """全量更新服务支持"""
@@ -287,6 +307,16 @@ def reset_useful_support_script():
     user_obj.collect_reset_supports()
     user_obj.update_online()
 
+def reset_user_worker_relation():
+    """重设部分客户客服关系"""
+    
+    user_obj = UserCenter(['ts-1796606'])
+    user_obj.collect_online_info()
+    user_obj.collect_update_worker()
+    user_obj.write_baihui_orders()
+    user_obj.update_online()
+    
 if __name__ == '__main__':
     daily_update_script()
     #reset_useful_support_script() 
+    #reset_user_worker_relation()
