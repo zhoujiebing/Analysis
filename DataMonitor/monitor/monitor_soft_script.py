@@ -53,7 +53,7 @@ def monitor_soft():
     return_info = marketing_info + order_info + comment_info 
     
     if return_info:
-        send_sms('13738141586', return_info)
+        #send_sms('13738141586', return_info)
         
         #send XJ
         #send_sms('18658818166', return_info)
