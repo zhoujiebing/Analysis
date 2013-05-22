@@ -113,8 +113,8 @@ class CollectSYBReport(CollectReport):
 
         time_now = datetime.datetime.now()
         shop_list = []
-        shop_status_list = Shop.get_all_normal_shop_status_in_syb()
-        shop_info_list = Shop.get_all_shop_info(2)
+        shop_status_list = Shop.get_all_normal_shop_status(self.soft_code)
+        shop_info_list = Shop.get_all_shop_info(self.soft_code)
         shop_info_dict = {}
         for shop in shop_info_list:
             shop_info_dict[shop['_id']] = {'access_token':shop['access_token'], 'sid':shop['_id'], \
@@ -150,11 +150,61 @@ class CollectSYBReport(CollectReport):
                 file_obj.write(Report.to_string(report))
         file_obj.close()
 
+class CollectBDReport(CollectReport):
+
+    def __init__(self, date):
+        CollectReport.__init__(self, date)
+        self.soft_code = 1
+        set_taobao_client('21065688', '74aecdce10af604343e942a324641891')
+
+    def get_shop_list(self):
+        """获取北斗 shop_list"""
+
+        time_now = datetime.datetime.now()
+        shop_list = []
+        shop_status_list = Shop.get_all_normal_shop_status(self.soft_code)
+        shop_info_list = Shop.get_all_shop_info(self.soft_code)
+        shop_info_dict = {}
+        for shop in shop_info_list:
+            shop_info_dict[shop['_id']] = {'access_token':shop['access_token'], 'sid':shop['_id'], \
+                    'subway_token':shop['subway_token'], 'nick':shop['nick']}
+        for shop in shop_status_list:
+            shop_info = shop_info_dict.get(shop['_id'], None)
+            if not shop_info:
+                continue
+            shop_info['days'] = 30
+            if shop.has_key('auto_campaign_id'):
+                shop_info[shop['auto_campaign_id']] = '北斗专属计划'
+            if shop.get('auto_campaign_init_time', None):
+                shop_info['auto_campaign_days'] = (time_now - shop['auto_campaign_init_time']).days
+            
+            use_days = shop_info.get('auto_campaign_days', 0)
+            if use_days <= 0:
+                continue
+            shop_info['days'] = min(shop_info['days'], use_days)
+            shop_list.append(shop_info)
+        
+        return shop_list
+
+    def write_report(self):
+        """将报表写到文件里"""
+        
+        file_obj = file(CURRENT_DIR+'data/report_data/bd_report'+str(self.today)+'.csv', 'w')    
+        for report in self.report_list:
+            if report:
+                file_obj.write(Report.to_string(report))
+        file_obj.close()
+
+
 def collect_report_script():
     today = datetime.date.today()
     syb_obj = CollectSYBReport(today)
     syb_obj.collect_report()
     syb_obj.write_report()
+    bd_obj = CollectBDReport(today)
+    bd_obj.collect_report()
+    bd_obj.write_report()
+    
     try:
         pass
     except Exception,e:

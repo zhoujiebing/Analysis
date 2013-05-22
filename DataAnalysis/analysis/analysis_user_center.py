@@ -68,17 +68,20 @@ class UserCenter:
         for key in self.user_orders.keys():
             self.user_orders[key].sort(key=lambda order:order['order_cycle_start'])
 
-    def analysis_orders(self, start_time, end_time):
-        """收集更新"""
+    def analysis_orders_renew(self, start_time, end_time):
+        """分析续订"""
        
-        days = 3
         seven_day_count = {}
+        two_week_count = {}
+        one_month_count = {}
         success_count = {}
         fail_count = {}
         for key in self.article_code_list:
             success_count[key] = 0
             fail_count[key] = 0
             seven_day_count[key] = 0
+            two_week_count[key] = 0
+            one_month_count[key] = 0
 
         for key in self.user_orders.keys():
             orders = self.user_orders[key]
@@ -86,73 +89,104 @@ class UserCenter:
             for i in range(len(orders)):
                 deadline = orders[i]['order_cycle_end']
                 if deadline >= start_time and deadline <= end_time:
+                    while i < len(orders) - 1:
+                        if int(orders[i+1]['total_pay_fee']) > 500:
+                            break
+                        else:
+                            i += 1
+
                     if i < len(orders) - 1:
                         success_count[article_code] += 1
-                        if (orders[i+1]['order_cycle_start'] - deadline).days <= days:
+                        delay_days = (orders[i+1]['order_cycle_start'] - deadline).days
+                        if delay_days <= 7:
                             seven_day_count[article_code] += 1
+                        if delay_days <= 14:
+                            two_week_count[article_code] += 1
+                        if delay_days <= 30:
+                            one_month_count[article_code] += 1
                     else:
                         fail_count[article_code] += 1
 
-        print '产品,统计开始时间,统计结束时间,过期用户数,截止当下的续约率,到期后%d天内续约率' % days
+        print '产品,统计开始时间,统计结束时间,过期用户数,截止当下的续约率,7天内续约率,14天内续约率,30天内续约率'
         for key in self.article_code_list:
             fail_num = success_count[key]+fail_count[key]
             success_percent = float(success_count[key]) / fail_num
             seven_day_percent = float(seven_day_count[key]) / fail_num
-            print '%s, %s, %s, %d, %.2f, %.2f' % (self.code_name[key], \
+            two_week_percent = float(two_week_count[key]) / fail_num
+            one_month_percent = float(one_month_count[key]) / fail_num
+
+            print '%s, %s, %s, %d, %.2f, %.2f, %.2f, %.2f' % (self.code_name[key], \
                     str(start_time.date()), str(end_time.date()), \
-                    fail_num, success_percent, seven_day_percent)
+                    fail_num, success_percent, seven_day_percent, two_week_percent, one_month_percent)
     
-    def write_baihui_orders(self):
-        """将需要更新的订单及服务支持写入文件"""
-
-        file_obj = file(CURRENT_DIR+'data/order.csv', 'w')
-        file_service_support = file(CURRENT_DIR+'data/support.csv', 'w')
-        for order in self.add_orders: 
-            order['app_name'] = self.code_name[order['article_code']] 
-            order_start = order['order_cycle_start']
-            order['start'] = datetime.date(order_start.year, order_start.month, order_start.day)
-            order_end = order['order_cycle_end']
-            order['end'] = datetime.date(order_end.year, order_end.month, order_end.day)
-            order['shangji'] = order['nick']+'_'+order['app_name']+'_'+str(order['end'])
-            order['order_type'] = self.order_type[order['biz_type']]
-            order['sale'] = int(order['total_pay_fee']) / 100
+    def analysis_orders_statistics(self):
+        """统计订单类型"""
+        
+        price_type = [0 for i in range(8)]
+        first_type = {}
+        second_type = {}
+        more_type = [0 for i in range(6)]
+        
+        cycle_type = [u"1个月", u"12个月", u"6个月", u"3个月", u"0个月" ]
+        for key in cycle_type:
+            first_type[key] = 0
+            second_type[key] = 0
             
-            shop = self.nick_shop[order['nick']]
-            order['worker_name'] = WORKER_DICT[shop['worker_id']]
-            order['seller_name'] = shop.get('seller_name', '')
-            order['seller_mobile'] = shop.get('seller_mobile', '')
+        order_count = 0
+        for key in self.user_orders.keys():
+            orders = self.user_orders[key]
+            for i in range(len(orders)):
+                order = orders[i]
+                if i == 0:
+                    first_type[order['order_cycle']] += 1
+                    fee = int(order['total_pay_fee']) / 100
+                    price_type[fee / 100] += 1
+                    order_count += 1
 
-            file_obj.write('%(nick)s,%(start)s,%(end)s,%(app_name)s,%(order_type)s,%(sale)d,订购使用中,每日更新,%(shangji)s,%(worker_name)s,%(seller_name)s,%(seller_mobile)s\n' % (order))
-            #print '%(nick)s,%(start)s,%(end)s,%(app_name)s,%(order_type)s,%(sale)d,订购使用中,每日更新,%(shangji)s' % (order)
+                elif i == 1:
+                    second_type[order['order_cycle']] += 1
 
-            order_time = order['order_cycle']
-            support_list = self.time_type[order_time]
-            for days in support_list:
-                support = self.support_type[days]
-                support_time = order_start+datetime.timedelta(days=days)
-                priority = '中'
-                if days < 0:
-                    support_time = order_end-datetime.timedelta(days=-days)
-                    priority = '高'
-                
-                if support_time < self.time_now:
-                    continue
-                support_name = order['app_name']+'_'+support+'_'+str(support_time)
-                file_service_support.write('%s,%s,%s,%s,%s,%s,%s,未回访,后台发掘\n' % \
-                        (order['nick'], support_name, priority, order['app_name'], support, str(support_time), order['worker_name']))
-                
-        file_obj.close()
-        file_service_support.close()
-    
+                more_type[i] += 1
+            
+            if order_count > 10000:
+                break
+        print '首次订购价格'
+        price_sum = sum(price_type)
+        for i in range(len(price_type)):
+            print '%d~%d: %d, %.4f' % (i*100, i*100+100, price_type[i], float(price_type[i])/price_sum)
+        print '合计:', price_sum
+
+        print '第一次订购周期'
+        cycle_sum = sum(first_type.values())
+        for key in cycle_type:
+            print '%s, %d, %.3f' % (key, first_type[key], float(first_type[key])/cycle_sum)
+        print '合计:', cycle_sum
+
+        print '第二次订购周期'
+        cycle_sum = sum(second_type.values())
+        for key in cycle_type:
+            print '%s, %d, %.3f' % (key, second_type[key], float(second_type[key])/cycle_sum)
+        print '合计:',cycle_sum
+
+        print '重复订购情况'
+        more_sum = sum(more_type)
+        for i in range(len(more_type)):
+            print '订购%d次, %d, %.3f' % (i+1, more_type[i], float(more_type[i])/more_sum)
+        print '合计:',more_sum 
+
 def daily_update_script():
     """更新user_center 并将更新导入到百会CRM"""
     
     user_obj = UserCenter(['ts-1796606', 'ts-1797607'])
     user_obj.collect_online_info()
-    user_obj.analysis_orders(datetime.datetime(2013, 2, 1), datetime.datetime(2013, 2, 28))
-    user_obj.analysis_orders(datetime.datetime(2013, 3, 1), datetime.datetime(2013, 3, 31))
-    user_obj.analysis_orders(datetime.datetime(2013, 4, 1), datetime.datetime(2013, 4, 30))
-    user_obj.analysis_orders(datetime.datetime(2013, 5, 1), datetime.datetime(2013, 5, 10))
+    user_obj.analysis_orders_renew(datetime.datetime(2013, 2, 1), datetime.datetime(2013, 2, 28))
+    user_obj.analysis_orders_renew(datetime.datetime(2013, 3, 1), datetime.datetime(2013, 3, 31))
+    user_obj.analysis_orders_renew(datetime.datetime(2013, 4, 1), datetime.datetime(2013, 4, 30))
+    user_obj.analysis_orders_renew(datetime.datetime(2013, 5, 1), datetime.datetime(2013, 5, 20))
+
 
 if __name__ == '__main__':
     daily_update_script()
+    #user_obj = UserCenter(['ts-1796606'])
+    #user_obj.collect_online_info()
+    #user_obj.analysis_orders_statistics()

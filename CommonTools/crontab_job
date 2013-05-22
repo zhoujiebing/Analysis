@@ -7,5 +7,3 @@ HOME=/home/zhoujiebing/Analysis/DataAnalysis/collect/
 30 6 * * * python collect_order_script.py 
 30 12 * * * python collect_order_script.py 
 30 18 * * * python collect_order_script.py 
-HOME=/home/zhoujiebing/CommonTools/
-00 10 * * * python daily_report.py

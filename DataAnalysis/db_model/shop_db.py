@@ -68,10 +68,10 @@ class Shop(object):
         return shops_status
 
     @classmethod
-    def get_all_normal_shop_status_in_syb(cls):
+    def get_all_normal_shop_status(cls, soft_code):
         """获取省油宝的所有正常shop_status"""
         
-        shop_status_list = Shop.get_all_shop_status(2)
+        shop_status_list = Shop.get_all_shop_status(soft_code)
         normal_shop_list = []
         for shop_status in shop_status_list:
             if shop_status.get('session_expired', False):

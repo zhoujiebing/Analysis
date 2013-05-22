@@ -90,7 +90,7 @@ class ZtcOrderReport(ZtcOrder):
         html_head += '<td width="80"><b>软件名称</td>'
         for type in ORDER_TYPE:
             html_head += '<td width="40"><b>' + type + '</td>'
-        html_head += '<td width="80"><b>%s 总共新增</td>'%self.today
+        html_head += '<td width="80"><b>%s 订单总数</td>'%self.today
         for strnum in self.strNum:
             html_head += '<td width="90"><b>' + strnum + '</td>'
         html_tail = '</table></body></html>'
