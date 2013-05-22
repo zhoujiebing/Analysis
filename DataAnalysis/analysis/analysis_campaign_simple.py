@@ -86,7 +86,7 @@ def analysis_campaign_simple(file_name):
                 (result.sum_cost / result.count, result.sum_pay / result.count, \
                 result.sum_pay / result.sum_cost, result.sum_cost / result.sum_click)
         content += '有效用户中昨日 ROI为0数：%d,   占比：%.2f\n' % (result.low_roi_count, \
-                result.low_roi_count / result.count)
+                float(result.low_roi_count) / result.count)
         content += '有效用户多天花费的平均值：%.1f, 多天成交额平均值：%.1f\n' % \
                 (result.sum_multi_cost / result.count, result.sum_multi_pay / result.count)
         content += '有效用户的日均花费的平均值：%.1f, 日均成交额的平均值：%.1f, 日均ROI：%.1f\n\n' % \

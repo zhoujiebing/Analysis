@@ -8,7 +8,7 @@ sys.path.append('../')
 
 from CommonTools.copy_online_db import copy_online_db
 from DataAnalysis.collect.collect_report import collect_report_script
-from DataAnalysis.analysys.analysis_campaign_script import analysis_campaign_script
+from DataAnalysis.analysis.analysis_campaign_script import analysis_campaign_script
 
 copy_online_db()
 collect_report_script()

@@ -31,7 +31,6 @@ class CollectReport:
         self.today = date
         header = u'账户,计划,当天ROI,当天花费,成交额,当天点击,平均点击花费,成交笔数,收藏,当天转化率,多天ROI,多天花费,多天成交额,多天收藏,天数,店铺id\n'
         self.header = header.encode('utf-8')
-        self.soft_code = None
         self.shop_list = self.get_shop_list()
         self.report_list = []
 
@@ -104,8 +103,8 @@ class CollectReport:
 class CollectSYBReport(CollectReport):
 
     def __init__(self, date):
-        CollectReport.__init__(self, date)
         self.soft_code = 2
+        CollectReport.__init__(self, date)
         set_taobao_client('12685542', '6599a8ba3455d0b2a043ecab96dfa6f9')
 
     def get_shop_list(self):
@@ -153,8 +152,8 @@ class CollectSYBReport(CollectReport):
 class CollectBDReport(CollectReport):
 
     def __init__(self, date):
-        CollectReport.__init__(self, date)
         self.soft_code = 1
+        CollectReport.__init__(self, date)
         set_taobao_client('21065688', '74aecdce10af604343e942a324641891')
 
     def get_shop_list(self):
@@ -201,9 +200,9 @@ def collect_report_script():
     syb_obj = CollectSYBReport(today)
     syb_obj.collect_report()
     syb_obj.write_report()
-    bd_obj = CollectBDReport(today)
-    bd_obj.collect_report()
-    bd_obj.write_report()
+    #bd_obj = CollectBDReport(today)
+    #bd_obj.collect_report()
+    #bd_obj.write_report()
     
     try:
         pass
