@@ -11,8 +11,8 @@
 """
 import pymongo
 
-if __name__ == '__main__':
-     
+def copy_online_db():
+
     #syb common_info
     dest_conn = pymongo.Connection(host='wp.maimiaotech.com', port=2007)
     dest_conn.drop_database('CommonInfo')
@@ -22,3 +22,6 @@ if __name__ == '__main__':
     dest_conn = pymongo.Connection(host='wp.maimiaotech.com', port=1996)
     dest_conn.drop_database('CommonInfo')
     dest_conn.copy_database('CommonInfo', 'CommonInfo', 'xcw.maimiaotech.com:27017')
+
+if __name__ == '__main__':
+    copy_online_db()

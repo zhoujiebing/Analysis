@@ -126,6 +126,14 @@ class UserCenter:
                     if order:
                         self.add_orders.append(order)
 
+    
+    def collect_useful_orders(self):
+        """收集全量有效订单"""
+        
+        for order in self.user_order.values():
+            if order['article_code'] not in self.article_code_list:
+                continue
+            self.add_orders.append(order)
 
     def collect_update_info(self):
         """收集更新"""
@@ -223,7 +231,7 @@ class UserCenter:
 
         return support_list
 
-    def write_baihui_orders(self):
+    def write_baihui_info(self):
         """将需要更新的订单及服务支持写入文件"""
 
         file_obj = file(CURRENT_DIR+'data/order.csv', 'w')
@@ -238,7 +246,9 @@ class UserCenter:
             order['order_type'] = self.order_type[order['biz_type']]
             order['sale'] = int(order['total_pay_fee']) / 100
             
-            shop = self.nick_shop[order['nick']]
+            shop = self.nick_shop.get(order['nick'], None)
+            if not shop or not shop.get('worker_id', None):
+                continue
             order['worker_name'] = WORKER_DICT[shop['worker_id']]
             order['seller_name'] = shop.get('seller_name', '')
             order['seller_mobile'] = shop.get('seller_mobile', '')
@@ -250,15 +260,15 @@ class UserCenter:
             support_list = self.time_type[order_time]
             for days in support_list:
                 support = self.support_type[days]
-                support_time = order_start+datetime.timedelta(days=days)
+                support_time = order['start']+datetime.timedelta(days=days)
                 priority = '中'
                 if days < 0:
-                    support_time = order_end-datetime.timedelta(days=-days)
+                    support_time = order['end']-datetime.timedelta(days=-days)
                     priority = '高'
                 
-                if support_time < self.time_now:
+                if support_time < self.time_now.date():
                     continue
-                support_name = order['app_name']+'_'+support+'_'+str(support_time)
+                support_name = order['nick']+'_'+order['app_name']+'_'+support+'_'+str(support_time)
                 file_service_support.write('%s,%s,%s,%s,%s,%s,%s,未回访,后台发掘\n' % \
                         (order['nick'], support_name, priority, order['app_name'], support, str(support_time), order['worker_name']))
                 
@@ -291,7 +301,7 @@ def daily_update_script():
         user_obj = UserCenter(['ts-1796606'])
         user_obj.collect_online_info()
         user_obj.collect_update_info()
-        user_obj.write_baihui_orders()
+        user_obj.write_baihui_info()
         user_obj.update_online()
     except Exception,e:
         logger.exception('user_center update error: %s', str(e))
@@ -313,10 +323,19 @@ def reset_user_worker_relation():
     user_obj = UserCenter(['ts-1796606'])
     user_obj.collect_online_info()
     user_obj.collect_update_worker()
-    user_obj.write_baihui_orders()
+    user_obj.write_baihui_info()
     user_obj.update_online()
-    
+
+def reset_baihui_info():
+    """重设百会数据"""
+
+    user_obj = UserCenter(['ts-1796606'])
+    user_obj.collect_online_info()
+    user_obj.collect_useful_orders()
+    user_obj.write_baihui_info()
+
 if __name__ == '__main__':
     daily_update_script()
     #reset_useful_support_script() 
     #reset_user_worker_relation()
+    #reset_baihui_info()
