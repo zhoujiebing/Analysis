@@ -62,7 +62,7 @@ def analysis_campaign_simple(file_name):
     """
     get simple report
     """
-    soft_list = ['省油宝长尾计划', '省油宝加力计划', '广撒网计划', '喜宝计划', '极品飞车', '懒人开车', '疯狂车手', '大麦']
+    soft_list = ['广撒网计划', '喜宝计划', '极品飞车', '懒人开车', '疯狂车手', '大麦']
     soft_statistics_dict = {}
     for key in soft_list:
         soft_statistics_dict[key] = Statistics()

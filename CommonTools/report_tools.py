@@ -32,6 +32,10 @@ REPORT_KEYS = [
         ['count_days', int],
         ['id', str]]
 
+
+MAIN_KEYS = ['pv', 'click', 'cost', 'cpc', 'pay', 'pay_count', 'fav_count', 'roi', 'ctr', 'cvr']
+MAIN_KEYS.extend(['multi_'+key for key in MAIN_KEYS])
+
 class Report:
     
     @classmethod
@@ -47,19 +51,20 @@ class Report:
             key_type = REPORT_KEYS[i]
             report_dict[key_type[0]] = key_type[1](data[i])
         report_dict['roi'] = report_dict['pay'] / (report_dict['cost'] + 0.01)
+        report_dict['cvr'] = report_dict['pay_count'] / (report_dict['click'] + 0.01)
+        report_dict['ctr'] = report_dict['click'] / (report_dict['pv'] + 0.01)
         report_dict['multi_roi'] = report_dict['multi_pay'] / (report_dict['multi_cost'] + 0.01)
-        report_dict['conversion'] = report_dict['pay_count'] / (report_dict['click'] + 0.01)
+        report_dict['multi_cvr'] = report_dict['multi_pay_count'] / (report_dict['multi_click'] + 0.01)
+        report_dict['multi_ctr'] = report_dict['multi_click'] / (report_dict['multi_pv'] + 0.01)
         return report_dict
         
     @classmethod
     def add_shop(self, report_dict, shop):
         """增加店铺 report 数据"""
 
-        report_dict['shop_cost'] = shop['cost']
-        report_dict['shop_multi_cost'] = shop['multi_cost']
-        report_dict['shop_pay'] = shop['pay']
-        report_dict['shop_multi_pay'] = shop['multi_pay']
-
+        for key in MAIN_KEYS:
+            new_key = 'shop_'+key
+            report_dict[new_key] = shop[key]
         report_dict['multi_cost_percent'] = report_dict['multi_cost'] / (shop['multi_cost'] + 0.000001)
         report_dict['multi_pay_percent'] = report_dict['multi_pay'] / (shop['multi_pay'] + 0.000001)
     

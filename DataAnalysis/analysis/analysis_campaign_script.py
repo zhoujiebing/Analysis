@@ -22,22 +22,24 @@ from DataAnalysis.analysis.analysis_campaign_simple import analysis_campaign_sim
 from DataAnalysis.analysis.analysis_campaign_complex import analysis_campaign_complex
 from DataAnalysis.analysis.analysis_campaign_horizontal import analysis_campaign_horizontal
 
-def analysis_campaign(report_file):
+def analysis_campaign(syb_file, bd_file):
     content = ''
-    content += analysis_campaign_complex(report_file, '省油宝长尾计划')
-    content += analysis_campaign_complex(report_file, '省油宝加力计划')
-    content += analysis_campaign_simple(report_file)
-    content += analysis_campaign_horizontal(report_file)
+    content += analysis_campaign_complex(syb_file, '省油宝长尾计划')
+    content += analysis_campaign_complex(syb_file, '省油宝加力计划')
+    content += analysis_campaign_complex(bd_file, '北斗专属计划')
+    content += analysis_campaign_simple(syb_file)
+    content += analysis_campaign_horizontal(syb_file)
     return content
 
 def analysis_campaign_script():
     today = str(datetime.date.today())
-    report_file = CURRENT_DIR+'data/report_data/report' + today + '.csv'
-    if not os.path.exists(report_file):
-        logger.error('analysis_campaign error: %s not exists ' % (report_file))
+    syb_file = CURRENT_DIR+'data/report_data/syb_report' + today + '.csv'
+    bd_file = CURRENT_DIR+'data/report_data/bd_report' + today + '.csv'
+    if not os.path.exists(syb_file):
+        logger.error('analysis_campaign error: %s not exists ' % (syb_file))
         return None
     try:
-        content = analysis_campaign(report_file)
+        content = analysis_campaign(syb_file, bd_file)
         sendTo = ['zhoujiebing@maimiaotech.com', 'tangxijin@maimiaotech.com', \
             'chenke@maimiaotech.com', 'liyangmin@maimiaotech.com']
         #for send_to in sendTo:
