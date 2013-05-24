@@ -13,7 +13,7 @@ if __name__ == '__main__':
     import sys
     sys.path.append('../../')
 import datetime
-from DataAnalysis.conf,settings import logger, CURRENT_DIR
+from DataAnalysis.conf.settings import logger, CURRENT_DIR
 from CommonTools.send_tools import send_email_with_file
 from CommonTools.report_tools import Report, MAIN_KEYS 
 from user_center.services.order_db_service import OrderDBService
@@ -86,6 +86,7 @@ def renew_account_script(_days = 4):
         write_renew_report(file_name, nick_list)
         text = '需电话营销的用户报表'
         #send_email_with_file('zhoujiebing@maimiaotech.com', text, '需电话营销的用户报表', [file_name])
+        send_email_with_file('zhangfenfen@maimiaotech.com', text, '需电话营销的用户报表', [file_name])
 
 if __name__ == '__main__':
-    renew_account_script(1)
+    renew_account_script()
