@@ -84,9 +84,10 @@ def renew_account_script(_days = 4):
         nick_list = article_nicks[article_code]
         file_name = CURRENT_DIR+'data/report_data/syb_report'+str(renew_date)+'.csv'
         write_renew_report(file_name, nick_list)
-        text = '需电话营销的用户报表'
-        #send_email_with_file('zhoujiebing@maimiaotech.com', text, '需电话营销的用户报表', [file_name])
-        send_email_with_file('zhangfenfen@maimiaotech.com', text, '需电话营销的用户报表', [file_name])
+        send_file = CURRENT_DIR+'data/renew_report.csv' 
+        text = '需电话营销的用户报表测试版'
+        #send_email_with_file('zhoujiebing@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
+        send_email_with_file('zhangfenfen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
 
 if __name__ == '__main__':
     renew_account_script()

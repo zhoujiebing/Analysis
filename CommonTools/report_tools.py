@@ -67,7 +67,8 @@ class Report:
             report_dict[new_key] = shop[key]
         report_dict['multi_cost_percent'] = report_dict['multi_cost'] / (shop['multi_cost'] + 0.000001)
         report_dict['multi_pay_percent'] = report_dict['multi_pay'] / (shop['multi_pay'] + 0.000001)
-    
+        report_dict['sid'] = shop['id']
+
     @classmethod
     def to_string(self, report):
         """与parser_report搭配使用效果更佳"""

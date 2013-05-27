@@ -40,11 +40,9 @@ def analysis_campaign_script():
         return None
     try:
         content = analysis_campaign(syb_file, bd_file)
-        sendTo = ['zhoujiebing@maimiaotech.com', 'tangxijin@maimiaotech.com', \
-            'chenke@maimiaotech.com', 'liyangmin@maimiaotech.com']
-        #for send_to in sendTo:
-        #    send_email_with_text(send_to, content, today+'_省油宝日常分析')
-        send_email_with_text('zhoujiebing@maimiaotech.com', content, today+'_省油宝日常分析')
+        #send_email_with_text('zhoujiebing@maimiaotech.com', content, today+'_产品报表日常分析')
+        send_email_with_text('product@maimiaotech.com', content, today+'_产品报表日常分析')
+
     except Exception,e:
         logger.exception('analysis_campaign error: %s' % (str(e)))
         send_sms('13738141586', 'analysis_campaign error: %s' % (str(e)))
