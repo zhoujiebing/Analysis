@@ -78,11 +78,12 @@ def renew_account_script(_days = 4):
     article_code_list = ['ts-1796606']
     today = datetime.date.today()
     renew_date = today - datetime.timedelta(days=_days)
+    report_date = today - datetime.timedelta(days=_days+1)
     renew_time = datetime.datetime.combine(renew_date, datetime.time())
     article_nicks = collect_renew_nicks(renew_time, renew_time, article_code_list)
     for article_code in article_code_list:
         nick_list = article_nicks[article_code]
-        file_name = CURRENT_DIR+'data/report_data/syb_report'+str(renew_date)+'.csv'
+        file_name = CURRENT_DIR+'data/report_data/syb_report'+str(report_date)+'.csv'
         write_renew_report(file_name, nick_list)
         send_file = CURRENT_DIR+'data/renew_report.csv' 
         text = '需电话营销的用户报表测试版'

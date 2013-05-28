@@ -63,7 +63,12 @@ class UserCenter:
         all_order = OrderDBService.get_all_orders_list()
         self.user_order = {}
         
+        order_flag = False 
+        order_time = datetime.combine(datetime.date.today()-datetime.timedelta(days=1), datetime.time())
+        
         for order in all_order:
+            if not order_flag and order['occur_time'] >= order_time:
+                order_flag = True
             if not order['article_code'] in self.article_code_list:
                 continue
             if order['order_id'] in refund_list:
@@ -72,6 +77,8 @@ class UserCenter:
             old_order = self.user_order.get(key, {'order_cycle_start':datetime.datetime(2011, 1, 1, 0, 0)})
             if order['order_cycle_start'] > old_order['order_cycle_start']:
                 self.user_order[key] = order
+        if not order_flag:
+            send_sms('13738141586',str(order_time)+'的订单没有抓取成功')
 
         #获取所有服务支持
         all_support = SupportDBService.get_all_supports_list()
