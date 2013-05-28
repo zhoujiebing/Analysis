@@ -15,6 +15,7 @@ import time
 if __name__ == '__main__':
     sys.path.append('../../')
 
+import random
 import datetime
 from CommonTools.logger import logger
 from CommonTools.send_tools import send_sms
@@ -341,8 +342,29 @@ def reset_baihui_info():
     user_obj.collect_useful_orders()
     user_obj.write_baihui_info()
 
+def sample_award(number):
+    """抽奖程序"""
+    
+    all_order = OrderDBService.get_orders_between_time(datetime.datetime(2013,5,20), datetime.datetime(2013,5,26))
+    all_nick = set([])
+    for order in all_order:
+        if order['article_code'] != 'ts-1796606':
+            continue
+        if str(order['order_cycle']) in ['1个月', '0个月']:
+            continue
+        all_nick.add(order['nick'])
+    nick_list = list(all_nick)
+    award_nick = random.sample(nick_list, number)
+    for nick in award_nick:
+        shop = ShopDBService.get_shop_by_nick(nick)
+        if not shop or not shop.get('worker_id'):
+            print nick + ',' + 'null'
+        else:
+            print nick + ',' + WORKER_DICT[shop['worker_id']]
+    
 if __name__ == '__main__':
     daily_update_script()
     #reset_useful_support_script() 
     #reset_user_worker_relation()
     #reset_baihui_info()
+    #sample_award(100)

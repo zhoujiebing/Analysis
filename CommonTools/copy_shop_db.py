@@ -18,5 +18,5 @@ if __name__ == '__main__':
     dest_conn = pymongo.Connection(port=2007)
     str_sid = sys.argv[1]
     dest_conn.drop_database(str_sid)
-    dest_conn.copy_database(str_sid, str_sid, 'syb.maimiaotech.com:1990')
+    dest_conn.copy_database(str_sid, str_sid, 'syb.maimiaotech.com:2010')
         
