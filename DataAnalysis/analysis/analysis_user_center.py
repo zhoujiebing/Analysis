@@ -19,7 +19,7 @@ import datetime
 from CommonTools.logger import logger
 from CommonTools.send_tools import send_sms, send_email_with_text
 from DataAnalysis.conf.settings import CURRENT_DIR
-from user_center.conf.settings import WORKER_DICT
+from user_center.conf.settings import WORKER_DICT, FULL_NUM
 from user_center.services.shop_db_service import ShopDBService
 from user_center.services.order_db_service import OrderDBService
 from user_center.services.refund_db_service import RefundDBService
@@ -85,6 +85,16 @@ class UserCenter:
                     real_orders.append(order)
             self.user_orders[key] = real_orders
         logger.info('finish collect_online_info')
+    
+    def analysis_worker_arrange(self):
+        """专属客服分配情况"""
+        
+        return_str = '每个专属客服配置的最大服务客户数为%d.\n' % (FULL_NUM)
+        for worker_id in WORKER_DICT.keys():
+            number = ShopDBService.count_normal_allocated_shop(worker_id)
+            return_str += '麦苗科技 %s : %d\n' % (WORKER_DICT[worker_id], number)
+
+        return return_str
 
     def analysis_orders_renew(self, start_time, end_time, article_code_list):
         """续费率统计"""
@@ -215,8 +225,9 @@ def daily_report_script():
     user_obj = UserCenter()
     user_obj.collect_online_info()
     return_str = user_obj.analysis_orders_renew(daily_report_date, daily_report_date, ['ts-1796606', 'ts-1797607'])
-    send_email_with_text('zhangfenfen@maimiaotech.com', return_str, '日常续费统计')
-    #send_email_with_text('zhoujiebing@maimiaotech.com', return_str, '日常续费统计')
+    return_str += user_obj.analysis_worker_arrange()
+    send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
+    #send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
 
 if __name__ == '__main__':
     daily_report_script()
