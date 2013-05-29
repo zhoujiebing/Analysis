@@ -17,6 +17,7 @@ import urllib, urllib2
 if __name__ == '__main__':
     sys.path.append('../')
 
+from email.Header import Header
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
@@ -33,7 +34,7 @@ def send_email_with_text(addressee, text, subject):
 
     msg = MIMEMultipart()
     msg.attach(MIMEText(text, _charset='utf-8'))
-    msg['Subject'] = subject
+    msg['Subject'] = Header(subject, 'utf-8')
     msg['From'] = 'zhoujiebing@maimiaotech.com'
     msg['To'] = addressee
     try:
@@ -48,7 +49,7 @@ def send_email_with_html(addressee, html, subject):
     """发送html email"""
 
     msg = MIMEMultipart()
-    msg['Subject'] = subject
+    msg['Subject'] = Header(subject, 'utf-8')
     msg['From'] = 'zhoujiebing@maimiaotech.com'
     msg['To'] = addressee
     html_att = MIMEText(html, 'html', 'utf-8')
@@ -66,7 +67,7 @@ def send_email_with_file(addressee, text, subject, file_list):
 
     msg = MIMEMultipart()
     msg.attach(MIMEText(text, _charset='utf-8'))
-    msg['Subject'] = subject
+    msg['Subject'] = Header(subject, 'utf-8')
     msg['From'] = 'zhoujiebing@maimiaotech.com'
     msg['To'] = addressee
 

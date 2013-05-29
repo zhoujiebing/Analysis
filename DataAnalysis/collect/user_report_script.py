@@ -38,7 +38,7 @@ def write_renew_report(file_name, nick_list):
             for key in print_keys:
                 if key in ['multi_cost', 'multi_cpc']:
                     campaign[key] /= 100.0
-                elif key in ['multi_cvr', 'multi_ctr']:
+                elif key in ['multi_cvr', 'multi_ctr', 'multi_roi']:
                     campaign[key] = '%.3f' % campaign[key]
                 report_str.append(str(campaign[key]))
             write_obj.write(','.join(report_str)+'\n')

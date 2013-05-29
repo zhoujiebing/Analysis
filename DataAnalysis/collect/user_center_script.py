@@ -65,7 +65,7 @@ class UserCenter:
         self.user_order = {}
         
         order_flag = False 
-        order_time = datetime.combine(datetime.date.today()-datetime.timedelta(days=1), datetime.time())
+        order_time = datetime.datetime.combine(datetime.date.today()-datetime.timedelta(days=1), datetime.time())
         
         for order in all_order:
             if not order_flag and order['occur_time'] >= order_time:
