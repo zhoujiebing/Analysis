@@ -63,10 +63,9 @@ MGDBS = {
     }
 
 #利用mongodb 自带的connection poll 来管理数据库连接
-host_url = ''
+host_url = []
 for key in ['syb1', 'syb2']:
-    host_url += '%s:%i' % (MGDBS[key]['HOST'], MGDBS[key]['PORT'])
+    host_url.append('%s:%i' % (MGDBS[key]['HOST'], MGDBS[key]['PORT']))
 host_url = ','.join(host_url)
-
 syb_db = pymongo.MongoReplicaSetClient(host=host_url, replicaSet='syb_db_replset')
 bd_db = Connection(host=MGDBS['bd']['HOST'],port=MGDBS['bd']['PORT'])

@@ -227,7 +227,7 @@ def daily_report_script():
     return_str = user_obj.analysis_orders_renew(daily_report_date, daily_report_date, ['ts-1796606', 'ts-1797607'])
     return_str += user_obj.analysis_worker_arrange()
     send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
-    #send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
+    send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
 
 if __name__ == '__main__':
     daily_report_script()
