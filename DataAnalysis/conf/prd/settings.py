@@ -48,17 +48,25 @@ if pymongo.version.startswith("2.5"):
 
 #MONGODB SETTINGS
 MGDBS = {
-        'syb':{
-            'HOST':'app.maimiaotech.com',
-            'PORT':2201,
+        'syb1':{
+            'HOST':'223.5.20.246',
+            'PORT':2010,
         },
-
+        'syb2':{
+            'HOST':'223.5.20.243',
+            'PORT':2010,
+        },
         'bd':{
-            'HOST':'app.maimiaotech.com',
-            'PORT':1996,
+            'HOST':'xcw.maimiaotech.com',
+            'PORT':27017,
         }
     }
 
 #利用mongodb 自带的connection poll 来管理数据库连接
-syb_db = Connection(host=MGDBS['syb']['HOST'],port=MGDBS['syb']['PORT'])
+host_url = ''
+for key in ['syb1', 'syb2']:
+    host_url += '%s:%i' % (MGDBS[key]['HOST'], MGDBS[key]['PORT'])
+host_url = ','.join(host_url)
+
+syb_db = pymongo.MongoReplicaSetClient(host=host_url, replicaSet='syb_db_replset')
 bd_db = Connection(host=MGDBS['bd']['HOST'],port=MGDBS['bd']['PORT'])

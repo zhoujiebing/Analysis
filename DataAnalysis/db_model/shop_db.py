@@ -22,30 +22,6 @@ class Shop(object):
     bd_conn = bd_db['CommonInfo']
 
     @classmethod
-    def get_shop_info_by_sid(cls, soft_code, shop_id):
-        """根据shop_id获得店铺基本信息"""
-
-        pass
-
-    @classmethod
-    def get_shop_status_by_sid(cls, soft_code, shop_id):
-        """根据shop_id获得店铺设置信息"""
-
-        pass
-
-    @classmethod
-    def get_shop_info_by_nick(cls, soft_code, nick):
-        """根据nick获得店铺基本信息"""
-
-        pass
-
-    @classmethod
-    def get_shop_status_by_nick(cls, soft_code, nick):
-        """根据nick获得店铺设置信息"""
-
-        pass
-
-    @classmethod
     def get_all_shop_info(cls, soft_code):
         """获取所有shop_info"""
             
@@ -69,7 +45,7 @@ class Shop(object):
 
     @classmethod
     def get_all_normal_shop_status(cls, soft_code):
-        """获取省油宝的所有正常shop_status"""
+        """获取soft_code的所有正常shop_status"""
         
         shop_status_list = Shop.get_all_shop_status(soft_code)
         normal_shop_list = []
@@ -82,31 +58,6 @@ class Shop(object):
 
         return normal_shop_list
     
-    @classmethod
-    def store_shop_to_center(cls, nick, sid, article_code, deadline, access_token):
-        """存储用户数据到数据中心"""
-        
-        shop = {'nick':str(nick), 'sid':int(sid)}
-        try:
-            if article_code == 'ts-1796606':
-                seller = ShopServiceSYB.get_seller_info_by_nick(nick, access_token)
-            elif article_code == 'ts-1797607':
-                seller = ShopServiceXCW.get_seller_info_by_nick(nick, access_token)
-        except Exception, e:
-            return None
-        if seller:
-            shop['seller_mobile'] = seller.get('seller_mobile', '')
-            shop['seller_name'] = seller.get('seller_name', '')
-            shop['seller_email'] = seller.get('seller_email', '')
-        
-        shop['worker_id'] = ShopDBService.allocate_one_shop()
-        shop[article_code+'_deadline'] = deadline
-        shop[article_code+'_status'] = '初始化'
-        shop['update_time'] = datetime.datetime.now()
-        shop['flag'] = True
-        ShopDBService.upsert_shop(shop)
-        return shop
-
 if __name__ == '__main__':
     shops_info = Shop.get_all_shop_info(1) 
     print len(shops_info)
