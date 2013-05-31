@@ -12,6 +12,7 @@
 if __name__ == '__main__':
     import sys
     sys.path.append('../../')
+import os
 import datetime
 from DataAnalysis.conf.settings import logger, CURRENT_DIR
 from CommonTools.send_tools import send_email_with_file
