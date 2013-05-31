@@ -166,7 +166,9 @@ class UserCenter:
                 order = self.user_order.get(key, None)
                 order_id = shop.get(article_order, None)
                 supports = self.user_supports.get(key, [])
-
+                
+                if article_code in self.article_code_list and not order:
+                    logger.error('[%s] 未发现任何订单' % shop['nick'])
                 if not order and order_id:
                     #新退款用户
                     shop[article_order] = None
