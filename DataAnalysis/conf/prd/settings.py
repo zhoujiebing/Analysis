@@ -49,11 +49,11 @@ if pymongo.version.startswith("2.5"):
 #MONGODB SETTINGS
 MGDBS = {
         'syb1':{
-            'HOST':'223.5.20.246',
+            'HOST':'192.168.10.246',
             'PORT':2010,
         },
         'syb2':{
-            'HOST':'223.5.20.243',
+            'HOST':'192.168.10.243',
             'PORT':2010,
         },
         'bd':{
