@@ -37,12 +37,10 @@ class UserCenter:
                 u'3个月':[7,30,-3],\
                 u'6个月':[7,30,90,-3],\
                 u'12个月':[7,30,180,270,-3]}
-        logger.info('UserCenter init success')
          
     def collect_online_info(self):
         """获取用户数据中心信息"""
         
-        logger.info('start collect_online_info')
         
         #获取所有用户
         all_shop = ShopDBService.get_all_shop_list()
@@ -50,11 +48,8 @@ class UserCenter:
         for shop in all_shop:
             self.nick_shop[shop['nick']] = shop
         
-        logger.info('finish collect shop info')
-        
         #获取所有订单
         all_order = OrderDBService.get_all_orders_list()
-        logger.info('finish collect order info')
         
         self.user_orders = {}
         for order in all_order:
@@ -63,13 +58,9 @@ class UserCenter:
                 self.user_orders[key] = []
             self.user_orders[key].append(order)
         
-        logger.info('finish arrange order info')
-        
         #获取所有退款
         all_refund = RefundDBService.get_all_refunds_list()
         refund_list = [refund['order_id'] for refund in all_refund]
-        
-        logger.info('finish collect refund info')
         
         for key in self.user_orders.keys():
             real_orders = []
@@ -84,7 +75,6 @@ class UserCenter:
                             order['order_cycle_end'] = next_order['order_cycle_end']
                     real_orders.append(order)
             self.user_orders[key] = real_orders
-        logger.info('finish collect_online_info')
     
     def analysis_worker_arrange(self):
         """专属客服分配情况"""
@@ -162,6 +152,44 @@ class UserCenter:
         
         return return_str
 
+    def analysis_orders_renew2(self, start_time, end_time, article_code):
+        """续费率统计"""
+       
+        worker_renew_effect = {}
+        for key in WORKER_DICT.keys():
+            worker_renew_effect[key] = {'fail_count':0, 'success_count':0, 'sum_pay':0}
+        
+        for key in self.user_orders.keys():
+            orders = self.user_orders[key]
+            if key[1] != article_code
+                continue
+            shop = self.nick_shop.get(key[0], None)
+            #无主订单
+            worker_id = shop['worker_id']
+            for i in range(len(orders)):    
+                deadline = orders[i]['order_cycle_end']
+                create_time = orders[i]['create']
+                #过期订单统计
+                if deadline >= start_time and deadline <= end_time:
+                    if i < len(orders) - 1:
+                        delay_days = (orders[i+1]['order_cycle_start'] - deadline).days
+                        if delay_days <= 3:
+                            worker_renew_effect[worker_id]['success_count'] += 1
+                            continue
+                    worker_renew_effect[worker_id]['fail_count'] += 1
+                #订单金额统计
+                if create_time >= start_time and create_time <= end_time:
+                    if i > 0:
+                        worker_renew_effect[worker_id]['sum_pay'] += orders[i]['total_pay_fee'] / 100
+                elif create_time > end_time:
+                    break
+        
+        for key in WORKER_DICT.keys():
+            worker_renew_effect[key]['renew'] = float(worker_renew_effect[key]['success_count']) / \
+                    (worker_renew_effect[key]['success_count'] + worker_renew_effect[key]['fail_count'])
+
+        return worker_renew_effect
+
     def analysis_orders_statistics(self):
         """统计订单类型"""
         
@@ -224,13 +252,22 @@ def daily_report_script():
     daily_report_date = today - datetime.timedelta(days=11)
     user_obj = UserCenter()
     user_obj.collect_online_info()
-    return_str = user_obj.analysis_orders_renew(daily_report_date, daily_report_date, ['ts-1796606', 'ts-1797607'])
+    return_str = user_obj.analysis_orders_renew(daily_report_date, daily_report_date, ['ts-1796606'])
     return_str += user_obj.analysis_worker_arrange()
     send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
     send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
 
 if __name__ == '__main__':
-    daily_report_script()
+    user_obj = UserCenter()
+    user_obj.collect_online_info()
+    worker_renew_effect = user_obj.analysis_orders_renew2(datetime.datetime(2013,5,1,0,0), \
+            datetime.datetime(2013,5,31), 'ts-1796606')
+    for worker_id in worker_renew_effect.keys():
+        effect = worker_renew_effect[worker_id]
+        print '%s, %d, %d, %d, %.3f' % (WORKER_DICT[worker_id], effect['sum_pay'], \
+                effect['success_count'], effect['fail_count'], effect['renew'])
+
+    #daily_report_script()
     #user_obj = UserCenter(['ts-1796606'])
     #user_obj.collect_online_info()
     #user_obj.analysis_orders_statistics()
