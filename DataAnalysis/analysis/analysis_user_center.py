@@ -41,29 +41,31 @@ class UserCenter:
     def collect_online_info(self):
         """获取用户数据中心信息"""
         
-        
         #获取所有用户
         all_shop = ShopDBService.get_all_shop_list()
         self.nick_shop = {}        
         for shop in all_shop:
             self.nick_shop[shop['nick']] = shop
         
+        #获取所有退款
+        self.all_refund = RefundDBService.get_all_refunds_list()
+        refund_ids = set([refund['order_id'] for refund in self.all_refund])
+        
         #获取所有订单
         all_order = OrderDBService.get_all_orders_list()
-        
+        #user_ok_orders 排除退款
+        self.user_ok_orders = {}
         self.user_orders = {}
+
         for order in all_order:
             key = (order['nick'], order['article_code'])
             if not self.user_orders.has_key(key):    
                 self.user_orders[key] = []
             self.user_orders[key].append(order)
         
-        #获取所有退款
-        all_refund = RefundDBService.get_all_refunds_list()
-        refund_list = [refund['order_id'] for refund in all_refund]
-        
         for key in self.user_orders.keys():
             real_orders = []
+            ok_orders = []
             orders = self.user_orders[key]
             orders.sort(key=lambda order:order['order_cycle_start'])
             for i in range(len(orders)):
@@ -73,7 +75,11 @@ class UserCenter:
                         next_order = orders[i+1]
                         if int(next_order['total_pay_fee']) <= 500 and next_order['biz_type'] == 2:
                             order['order_cycle_end'] = next_order['order_cycle_end']
-                    real_orders.append(order)
+                    if order['order_id'] in refund_ids:
+                        real_orders.append(order)
+                        continue
+                    ok_orders.append(order)
+            self.user_ok_orders[key] = ok_orders
             self.user_orders[key] = real_orders
     
     def analysis_worker_arrange(self):
@@ -99,8 +105,8 @@ class UserCenter:
             for days in some_days:
                 some_day_count[(key,days)] = 0 
 
-        for key in self.user_orders.keys():
-            orders = self.user_orders[key]
+        for key in self.user_ok_orders.keys():
+            orders = self.user_ok_orders[key]
             article_code = key[1]
             if not article_code in article_code_list:
                 continue
@@ -151,42 +157,116 @@ class UserCenter:
             return_str += ','.join(report2)+'\n'
         
         return return_str
+    
+    def analysis_worker_refund(self, start_time, end_time, article_code):
+        """退款统计"""
 
-    def analysis_orders_renew2(self, start_time, end_time, article_code):
-        """续费率统计"""
-       
-        worker_renew_effect = {}
-        for key in WORKER_DICT.keys():
-            worker_renew_effect[key] = {'fail_count':0, 'success_count':0, 'sum_pay':0}
-        
-        for key in self.user_orders.keys():
+        pass
+
+    def analysis_pre_market(self, start_time, end_time, article_code):
+        """售前营销统计"""
+
+        pre_market_effect = {}
+        pre_market_nick = {}
+        for key in self.user_orders.key():
             orders = self.user_orders[key]
-            if key[1] != article_code
+            if key[1] != article_code:
                 continue
-            shop = self.nick_shop.get(key[0], None)
-            #无主订单
-            worker_id = shop['worker_id']
+            for i in range(len(orders)):    
+                create_time = orders[i]['create']
+                
+                if start_time <= create_time <= end_time:
+                    if i > 0:
+                        start_date = orders[i-1]['order_cycle_end'] + datetime.timedelta(days=4)
+                        end_date = orders[i-1]['order_cycle_end'] + datetime.timedelta(days=15)
+                        if start_date <= create_time <= end_date:
+                            phone_renew_effect[worker_id]['sum_pay'] += \
+                                    int(orders[i]['total_pay_fee']) / 100
+                elif create_time > end_time:
+                    break
+
+    def analysis_phone_renew(self, start_time, end_time, article_code):
+        """电话营销统计 月末统计上个月倒数第15天到本月倒数第16天"""
+
+        phone_renew_effect = {}
+        #目前就一个电话营销
+        worker_num = 1
+        for key in range(worker_num):
+            phone_renew_effect[key] = {'fail_count':0, 'success_count':0, 'sum_pay':0}
+
+        for key in self.user_ok_orders.keys():
+            orders = self.user_ok_orders[key]
+            if key[1] != article_code:
+                continue
+            worker_id = hash(key[0]) % worker_num
             for i in range(len(orders)):    
                 deadline = orders[i]['order_cycle_end']
                 create_time = orders[i]['create']
-                #过期订单统计
-                if deadline >= start_time and deadline <= end_time:
+                
+                #续费率 使用到期时间
+                if start_time <= deadline <= end_time:
                     if i < len(orders) - 1:
-                        delay_days = (orders[i+1]['order_cycle_start'] - deadline).days
-                        if delay_days <= 3:
-                            worker_renew_effect[worker_id]['success_count'] += 1
+                        start_date = deadline + datetime.timedelta(days=4)
+                        end_date = deadline + datetime.timedelta(days=15)
+                        
+                        if start_date <= orders[i+1]['create'] <= end_date:
+                            phone_renew_effect[worker_id]['success_count'] += 1
                             continue
-                    worker_renew_effect[worker_id]['fail_count'] += 1
-                #订单金额统计
-                if create_time >= start_time and create_time <= end_time:
+                    phone_renew_effect[worker_id]['fail_count'] += 1
+                #提成 使用发生时间
+                if start_time <= create_time <= end_time:
                     if i > 0:
-                        worker_renew_effect[worker_id]['sum_pay'] += orders[i]['total_pay_fee'] / 100
+                        start_date = orders[i-1]['order_cycle_end'] + datetime.timedelta(days=4)
+                        end_date = orders[i-1]['order_cycle_end'] + datetime.timedelta(days=15)
+                        if start_date <= create_time <= end_date:
+                            phone_renew_effect[worker_id]['sum_pay'] += \
+                                    int(orders[i]['total_pay_fee']) / 100
+                elif create_time > end_time:
+                    break
+
+        for key in range(worker_num):
+            phone_renew_effect[key]['renew'] = phone_renew_effect[key]['success_count'] / (phone_renew_effect[key]['fail_count']+0.01)
+        return phone_renew_effect
+
+    def analysis_worker_renew2(self, start_time, end_time, article_code):
+        """续费率统计 月末统计上个月倒数第3天到本月倒数第4天"""
+       
+        worker_renew_effect = {}
+        workers = WORKER_DICT.keys() + [-1]
+        for key in workers:
+            worker_renew_effect[key] = {'fail_count':0, 'success_count':0, 'sum_pay':0}
+        
+        for key in self.user_ok_orders.keys():
+            orders = self.user_ok_orders[key]
+            if key[1] != article_code:
+                continue
+            shop = self.nick_shop.get(key[0], None)
+            #无主订单
+            if not shop:
+                worker_id = -1
+            else:
+                worker_id = shop['worker_id']
+            for i in range(len(orders)):    
+                deadline = orders[i]['order_cycle_end']
+                create_time = orders[i]['create']
+                #续费率 使用到期时间 
+                if start_time <= deadline <= end_time:
+                    if worker_id == -1:
+                        logger.info('%s find order, but not find shop' % key[0])
+                    if i < len(orders) - 1:  
+                        if orders[i+1]['create'] <= deadline + datetime.timedelta(days=3):
+                            worker_renew_effect[worker_id]['success_count'] += 1
+                    worker_renew_effect[worker_id]['fail_count'] += 1
+                #提成 使用发生时间
+                if start_time <= create_time <= end_time:
+                    if i > 0:
+                        if create_time <= orders[i-1]['order_cycle_end'] + datetime.timedelta(days=3):
+                            worker_renew_effect[worker_id]['sum_pay'] += int(orders[i]['total_pay_fee']) / 100
                 elif create_time > end_time:
                     break
         
-        for key in WORKER_DICT.keys():
-            worker_renew_effect[key]['renew'] = float(worker_renew_effect[key]['success_count']) / \
-                    (worker_renew_effect[key]['success_count'] + worker_renew_effect[key]['fail_count'])
+        for key in workers:
+            worker_renew_effect[key]['renew'] = worker_renew_effect[key]['success_count'] / (worker_renew_effect[key]['fail_count']+0.01)
 
         return worker_renew_effect
 
@@ -204,8 +284,8 @@ class UserCenter:
             second_type[key] = 0
             
         order_count = 0
-        for key in self.user_orders.keys():
-            orders = self.user_orders[key]
+        for key in self.user_ok_orders.keys():
+            orders = self.user_ok_orders[key]
             for i in range(len(orders)):
                 order = orders[i]
                 if i == 0:
@@ -256,18 +336,30 @@ def daily_report_script():
     return_str += user_obj.analysis_worker_arrange()
     send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
     send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
+    send_email_with_text('tangxijin@maimiaotech.com', return_str, 'UserCenter统计')
 
 if __name__ == '__main__':
-    user_obj = UserCenter()
-    user_obj.collect_online_info()
-    worker_renew_effect = user_obj.analysis_orders_renew2(datetime.datetime(2013,5,1,0,0), \
-            datetime.datetime(2013,5,31), 'ts-1796606')
-    for worker_id in worker_renew_effect.keys():
-        effect = worker_renew_effect[worker_id]
-        print '%s, %d, %d, %d, %.3f' % (WORKER_DICT[worker_id], effect['sum_pay'], \
-                effect['success_count'], effect['fail_count'], effect['renew'])
+    #user_obj = UserCenter()
+    #user_obj.collect_online_info()
 
-    #daily_report_script()
+    #phone_renew_effect = user_obj.analysis_phone_renew(datetime.datetime(2013,5,1,0,0), \
+    #    datetime.datetime(2013,5,20,0,0), 'ts-1796606')
+    #for id in phone_renew_effect.keys():
+    #    effect = phone_renew_effect[id]
+    #    print '%d, %d, %d, %d, %.3f' % (id, effect['sum_pay'],\
+    #            effect['success_count'], effect['fail_count'], effect['renew'])
+    #worker_renew_effect = user_obj.analysis_worker_renew2(datetime.datetime(2013,5,25,0,0), \
+    #        datetime.datetime(2013,5,31,0,0), 'ts-1796606')
+    #for worker_id in worker_renew_effect.keys():
+    #    effect = worker_renew_effect[worker_id]
+    #    if worker_id > -1:
+    #        print '%s, %d, %d, %d, %.3f' % (WORKER_DICT[worker_id], effect['sum_pay'], \
+    #            effect['success_count'], effect['fail_count'], effect['renew'])
+    #    else:
+    #        print '其他, %d, %d, %d, %.3f' % (effect['sum_pay'], \
+    #            effect['success_count'], effect['fail_count'], effect['renew'])
+    
+    daily_report_script()
     #user_obj = UserCenter(['ts-1796606'])
     #user_obj.collect_online_info()
     #user_obj.analysis_orders_statistics()

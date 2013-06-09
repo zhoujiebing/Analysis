@@ -116,7 +116,8 @@ class CollectSYBReport(CollectReport):
         shop_info_list = Shop.get_all_shop_info(self.soft_code)
         shop_info_dict = {}
         for shop in shop_info_list:
-            shop_info_dict[shop['_id']] = {'access_token':shop['access_token'], 'sid':shop['_id'], \
+            if shop.has_key('access_token'):
+                shop_info_dict[shop['_id']] = {'access_token':shop['access_token'], 'sid':shop['_id'], \
                     'subway_token':shop['subway_token'], 'nick':shop['nick']}
         for shop in shop_status_list:
             shop_info = shop_info_dict.get(shop['_id'], None)
@@ -196,15 +197,14 @@ class CollectBDReport(CollectReport):
 
 def collect_report_script():
     today = datetime.date.today()
-    syb_obj = CollectSYBReport(today)
-    syb_obj.collect_report()
-    syb_obj.write_report()
-    bd_obj = CollectBDReport(today)
-    bd_obj.collect_report()
-    bd_obj.write_report()
-    
     try:
-        pass
+        syb_obj = CollectSYBReport(today)
+        syb_obj.collect_report()
+        syb_obj.write_report()
+        bd_obj = CollectBDReport(today)
+        bd_obj.collect_report()
+        bd_obj.write_report()
+    
     except Exception,e:
         logger.exception('collect_report_script error: %s', str(e))
         send_sms('13738141586', 'collect_report_script error: %s' % (str(e)))
