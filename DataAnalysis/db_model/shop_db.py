@@ -27,7 +27,7 @@ class Shop(object):
             
         nick = str(nick)
         shops = cls.syb_conn['shop_status'].find({'nick':nick})
-        if len(shops) != 1:
+        if shops.count() != 1:
             return False
         message_dict['sid'] = shops[0]['_id']
         message_dict['message_time'] = datetime.datetime.now()

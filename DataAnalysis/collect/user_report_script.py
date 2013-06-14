@@ -83,7 +83,8 @@ def collect_renew_nicks(start_time, end_time, article_code_list=['ts-1796606', '
 
 def auto_support_script():
     """自动生成特殊服务支持"""
-     
+    MESSAGE_A = '亲爱的掌柜您好~谨代表麦苗团队全体成员欢迎您入驻省油宝！不知亲这两天使用下来感觉怎么样呢？有问题要随时和我联系哦，如果我不在线，亲可以留言呢~！期待与亲有更多的交流，一定竭诚为亲服务的！'
+    MESSAGE_B = '亲~您的软件还有3天就要到期了哦~~悄悄过来提醒下，如果亲觉得效果可以要及时续费呢，很期待继续服务亲~如果亲对我们的软件和服务有什么建议，请不要吝啬告诉我哦~~祝亲生意兴隆~！'
     user_info = {}
     all_order = OrderDBService.get_all_orders_list()
     for order in all_order:
@@ -101,16 +102,16 @@ def auto_support_script():
    
     today = datetime.date.today()
     for nick in user_info: 
-       order = user_info[nick]
-       message_dict = {'status':'new'}
-       if order['order_cycle_start'].date() + datetime.timedelta(days=3) == today:
-           message_dict['message'] = '3天留言'
-           print nick + ":" + message_dict['message']
-           Shop.upsert_cs_message(nick, message_dict) 
-       elif order['order_cycle_end'].date() == today + datetime.timedelta(days=3):
-           message_dict['message'] = '-3天留言'
-           print nick + ":" + message_dict['message']
-           Shop.upsert_cs_message(nick, message_dict) 
+        order = user_info[nick]
+        message_dict = {'status':'new'}
+        if order['order_cycle_start'].date() + datetime.timedelta(days=3) == today:
+            message_dict['message'] = MESSAGE_A
+            if Shop.upsert_cs_message(nick, message_dict):
+                print nick + ":" + message_dict['message']
+        elif order['order_cycle_end'].date() == today + datetime.timedelta(days=3):
+            message_dict['message'] = MESSAGE_B
+            if Shop.upsert_cs_message(nick, message_dict):
+                print nick + ":" + message_dict['message']
            
 def renew_account_script(_days = 4):
     """电话续费"""
