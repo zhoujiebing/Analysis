@@ -20,6 +20,19 @@ class Shop(object):
 
     syb_conn = syb_db['CommonInfo']
     bd_conn = bd_db['CommonInfo']
+    
+    @classmethod
+    def upsert_cs_message(cls, nick, message_dict):
+        """更新用户留言"""
+            
+        nick = str(nick)
+        shops = cls.syb_conn['shop_status'].find({'nick':nick})
+        if len(shops) != 1:
+            return False
+        message_dict['sid'] = shops[0]['_id']
+        message_dict['message_time'] = datetime.datetime.now()
+        cls.syb_conn['cs_message'].update({'nick':nick}, {'$set':message_dict}, upsert=True)
+        return True
 
     @classmethod
     def get_all_shop_info(cls, soft_code):
@@ -57,7 +70,25 @@ class Shop(object):
             normal_shop_list.append(shop_status)
 
         return normal_shop_list
-    
+
+def analysis_deal_keyword():
+    shop_status_list = Shop.get_all_normal_shop_status(2)
+    for shop_status in shop_status_list:
+        sdate = shop_status.get('deal_keyword_start_date', None)
+        edate = shop_status.get('deal_keyword_end_date', None)
+        if sdate and edate:
+            print '%s, %s, %s' % (shop_status['nick'], str(sdate.date()), str(edate.date()))
+        else:
+            print '为空 %s, %s, %s' % (shop_status['nick'], str(sdate), str(edate))
+
+def analysis_key_campaign():
+    shop_status_list = Shop.get_all_normal_shop_status(2)
+    for shop_status in shop_status_list:
+        edate = shop_status.get('key_campaign_optimize_time', None)
+        if shop_status.get('key_campaign_cancel_status', True):
+            continue
+        if edate:
+            print '%s, %s' % (shop_status['nick'], str(edate.date()))
+
 if __name__ == '__main__':
-    shops_info = Shop.get_all_shop_info(1) 
-    print len(shops_info)
+    analysis_key_campaign()

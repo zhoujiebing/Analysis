@@ -33,12 +33,11 @@ class UserCenter:
         self.article_code_list = article_code_list
         self.code_name = {'ts-1796606':'省油宝', 'ts-1797607':'选词王', 'ts-1817244':'淘词'}
         self.order_type = {1:'新订', 2:'续订', 3:'升级', 4:'后台赠送', 5:'后台自动续订'}
-        self.support_type = {7:'7天初访', 14:'2周回访', 30:'1月回访', 90:'3月回访', \
-                180:'半年回访',270:'9月回访',-3:'3天到期续签'}
-        self.time_type = {u'1个月':[7,14,-3],\
-                u'3个月':[7,30,-3],\
-                u'6个月':[7,30,90,-3],\
-                u'12个月':[7,30,180,270,-3]}
+        self.support_type = {10:'10天回访', 30:'1月回访', -15:'15天到期续签'}
+        self.time_type = {u'1个月':[10,-15],\
+                u'3个月':[10,30,-15],\
+                u'6个月':[10,30,-15],\
+                u'12个月':[10,30,-15]}
          
         #要更新的用户
         self.update_shops = []
@@ -231,7 +230,7 @@ class UserCenter:
             support['article_code'] = order['article_code']
             support['support_id'] = order['order_id']*10 + i
             support['support_type'] = self.support_type[days]
-            support['support_status'] = '未处理'
+            support['support_status'] = '未回访'
             support['occur_time'] = order['order_cycle_start']+datetime.timedelta(days=days)
             priority = '中'
             if days < 0:

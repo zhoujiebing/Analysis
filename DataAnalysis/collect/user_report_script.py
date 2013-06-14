@@ -18,6 +18,7 @@ from DataAnalysis.conf.settings import logger, CURRENT_DIR
 from CommonTools.send_tools import send_email_with_file
 from CommonTools.report_tools import Report, MAIN_KEYS 
 from user_center.services.order_db_service import OrderDBService
+from DataAnalysis.db_model.shop_db import Shop
 
 def write_renew_report(file_name, nick_list):
     """收集nick_list的报表"""
@@ -42,6 +43,7 @@ def write_renew_report(file_name, nick_list):
                 elif key in ['multi_cvr', 'multi_ctr', 'multi_roi']:
                     campaign[key] = '%.3f' % campaign[key]
                 report_str.append(str(campaign[key]))
+            #TODO 增加联系方式 以及 电话营销人员id
             write_obj.write(','.join(report_str)+'\n')
     
     write_obj.close()
@@ -79,6 +81,37 @@ def collect_renew_nicks(start_time, end_time, article_code_list=['ts-1796606', '
     
     return article_nicks
 
+def auto_support_script():
+    """自动生成特殊服务支持"""
+     
+    user_info = {}
+    all_order = OrderDBService.get_all_orders_list()
+    for order in all_order:
+        if order['article_code'] != 'ts-1796606':
+            continue
+        key = order['nick']
+        pre_order = user_info.get(key, None)
+        if not pre_order:
+            user_info[key] = order 
+        else:
+            if order['order_cycle_start'] < pre_order['order_cycle_start']:
+                pre_order['order_cycle_start'] = order['order_cycle_start']
+            if order['order_cycle_end'] > pre_order['order_cycle_end']:
+                pre_order['order_cycle_end'] = order['order_cycle_end']
+   
+    today = datetime.date.today()
+    for nick in user_info: 
+       order = user_info[nick]
+       message_dict = {'status':'new'}
+       if order['order_cycle_start'].date() + datetime.timedelta(days=3) == today:
+           message_dict['message'] = '3天留言'
+           print nick + ":" + message_dict['message']
+           Shop.upsert_cs_message(nick, message_dict) 
+       elif order['order_cycle_end'].date() == today + datetime.timedelta(days=3):
+           message_dict['message'] = '-3天留言'
+           print nick + ":" + message_dict['message']
+           Shop.upsert_cs_message(nick, message_dict) 
+           
 def renew_account_script(_days = 4):
     """电话续费"""
     
@@ -100,6 +133,7 @@ def renew_account_script(_days = 4):
         text = '需电话营销的用户报表测试版'
         #send_email_with_file('zhoujiebing@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
         send_email_with_file('zhangfenfen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
+        send_email_with_file('xiaoshouxukai@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
 
 if __name__ == '__main__':
-    renew_account_script()
+    auto_support_script()

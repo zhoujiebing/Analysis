@@ -31,12 +31,6 @@ class UserCenter:
         self.time_now = datetime.datetime.now()
         self.code_name = {'ts-1796606':'省油宝', 'ts-1797607':'选词王', 'ts-1817244':'淘词'}
         self.order_type = {1:'新订', 2:'续订', 3:'升级', 4:'后台赠送', 5:'后台自动续订'}
-        self.support_type = {7:'7天初访', 14:'2周回访', 30:'1月回访', 90:'3月回访', \
-                180:'半年回访',270:'9月回访',-3:'3天到期续签'}
-        self.time_type = {u'1个月':[7,14,-3],\
-                u'3个月':[7,30,-3],\
-                u'6个月':[7,30,90,-3],\
-                u'12个月':[7,30,180,270,-3]}
          
     def collect_online_info(self):
         """获取用户数据中心信息"""
@@ -70,9 +64,10 @@ class UserCenter:
             orders.sort(key=lambda order:order['order_cycle_start'])
             for i in range(len(orders)):
                 order = orders[i]
-                if int(order['total_pay_fee']) > 500:
+                if int(order['total_pay_fee']) > 500 or i == 0:
                     if i < len(orders) - 1:
                         next_order = orders[i+1]
+                        #合并 优惠 续费 订单
                         if int(next_order['total_pay_fee']) <= 500 and next_order['biz_type'] == 2:
                             order['order_cycle_end'] = next_order['order_cycle_end']
                     if order['order_id'] in refund_ids:
@@ -116,7 +111,7 @@ class UserCenter:
                     
                     if i < len(orders) - 1:
                         success_count[article_code] += 1
-                        delay_days = (orders[i+1]['order_cycle_start'] - deadline).days
+                        delay_days = (orders[i+1]['create'] - deadline).days
                         for days in some_days:
                             if delay_days > days:
                                 continue
@@ -337,6 +332,15 @@ def daily_report_script():
     send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
     send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
     send_email_with_text('tangxijin@maimiaotech.com', return_str, 'UserCenter统计')
+
+def special_report_script():
+    """日常订单统计报表"""
+    
+    user_obj = UserCenter()
+    user_obj.collect_online_info()
+    return_str = user_obj.analysis_orders_renew(datetime.datetime(2013,6,1,0,0), \
+            datetime.datetime(2013,6,8,0,0), ['ts-1796606'])
+    print return_str
 
 if __name__ == '__main__':
     #user_obj = UserCenter()
