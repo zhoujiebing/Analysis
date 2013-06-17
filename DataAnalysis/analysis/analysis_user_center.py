@@ -77,6 +77,37 @@ class UserCenter:
             self.user_ok_orders[key] = ok_orders
             self.user_orders[key] = real_orders
     
+    def analysis_out_of_date_num(self, start_time, end_time, article_code_list):
+        """到期用户分析"""
+        
+        return_str = '近7天到期用户数统计:\n'
+        return_str += '日期,省油宝,北斗\n'
+        num_effect = {}
+        start_date = start_time.date()
+        while start_date <= end_time.date():
+            num_effect[start_date] = {}
+            for article_code in article_code_list:
+                num_effect[start_date][article_code] = 0
+            start_date += datetime.timedelta(days=1)
+
+        for key in self.user_ok_orders.keys():
+            orders = self.user_ok_orders[key]
+            article_code = key[1]
+            if not article_code in article_code_list:
+                continue
+            if len(orders) <= 0:
+                continue
+            order = orders[-1]
+            if start_time <= order['order_cycle_end'] <= end_time:
+                deadline = order['order_cycle_end'].date()
+                num_effect[deadline][article_code] += 1
+        date_list = num_effect.keys()
+        date_list.sort()
+        for date in date_list:
+            return_str += '%s: %d, %d\n' % (str(date), num_effect[date]['ts-1796606'],\
+                    num_effect[date]['ts-1797607'])
+        return return_str
+
     def analysis_worker_arrange(self):
         """专属客服分配情况"""
         
@@ -329,9 +360,39 @@ def daily_report_script():
     user_obj.collect_online_info()
     return_str = user_obj.analysis_orders_renew(daily_report_date, daily_report_date, ['ts-1796606'])
     return_str += user_obj.analysis_worker_arrange()
-    send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
+    return_str += user_obj.analysis_out_of_date_num(today, today+datetime.timedelta(days=6),\
+            ['ts-1796606', 'ts-1797607'])
     send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
+    send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
     send_email_with_text('tangxijin@maimiaotech.com', return_str, 'UserCenter统计')
+
+def cycle_report_script():
+    """周期统计报表"""
+    
+    user_obj = UserCenter()
+    user_obj.collect_online_info()
+    worker_renew_effect = user_obj.analysis_worker_renew2(datetime.datetime(2013,5,28,0,0),  \
+            datetime.datetime(2013,6,14,0,0), 'ts-1796606')
+    print '售后绩效分析'
+    print '专属客服,奖金,成功数,过期数,续费率'
+    for worker_id in worker_renew_effect:
+        effect = worker_renew_effect[worker_id]
+        if worker_id > -1:
+            print '%s, %d, %d, %d, %.3f' % (WORKER_DICT[worker_id], effect['sum_pay'], \
+                effect['success_count'], effect['fail_count'], effect['renew'])
+        else:
+            print '其他, %d, %d, %d, %.3f' % (effect['sum_pay'], \
+                effect['success_count'], effect['fail_count'], effect['renew'])
+    
+    print '电销绩效分析'
+    print 'id,奖金,成功数,过期数,续费率'
+    phone_renew_effect = user_obj.analysis_phone_renew(datetime.datetime(2013,5,26,0,0), \
+            datetime.datetime(2013,6,6,0,0), 'ts-1796606')
+    for id in phone_renew_effect:
+        effect = phone_renew_effect[id]
+        print '%d, %d, %d, %d, %.3f' % (id, effect['sum_pay'],\
+                effect['success_count'], effect['fail_count'], effect['renew'])
+
 
 def special_report_script():
     """日常订单统计报表"""
@@ -343,27 +404,8 @@ def special_report_script():
     print return_str
 
 if __name__ == '__main__':
-    #user_obj = UserCenter()
-    #user_obj.collect_online_info()
-
-    #phone_renew_effect = user_obj.analysis_phone_renew(datetime.datetime(2013,5,1,0,0), \
-    #    datetime.datetime(2013,5,20,0,0), 'ts-1796606')
-    #for id in phone_renew_effect.keys():
-    #    effect = phone_renew_effect[id]
-    #    print '%d, %d, %d, %d, %.3f' % (id, effect['sum_pay'],\
-    #            effect['success_count'], effect['fail_count'], effect['renew'])
-    #worker_renew_effect = user_obj.analysis_worker_renew2(datetime.datetime(2013,5,25,0,0), \
-    #        datetime.datetime(2013,5,31,0,0), 'ts-1796606')
-    #for worker_id in worker_renew_effect.keys():
-    #    effect = worker_renew_effect[worker_id]
-    #    if worker_id > -1:
-    #        print '%s, %d, %d, %d, %.3f' % (WORKER_DICT[worker_id], effect['sum_pay'], \
-    #            effect['success_count'], effect['fail_count'], effect['renew'])
-    #    else:
-    #        print '其他, %d, %d, %d, %.3f' % (effect['sum_pay'], \
-    #            effect['success_count'], effect['fail_count'], effect['renew'])
-    
     daily_report_script()
+    #cycle_report_script()
     #user_obj = UserCenter(['ts-1796606'])
     #user_obj.collect_online_info()
     #user_obj.analysis_orders_statistics()

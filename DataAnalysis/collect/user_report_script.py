@@ -103,7 +103,7 @@ def auto_support_script():
     today = datetime.date.today()
     for nick in user_info: 
         order = user_info[nick]
-        message_dict = {'status':'new'}
+        message_dict = {'status':'new', 'worker':''}
         if order['order_cycle_start'].date() + datetime.timedelta(days=3) == today:
             message_dict['message'] = MESSAGE_A
             if Shop.upsert_cs_message(nick, message_dict):
@@ -112,7 +112,8 @@ def auto_support_script():
             message_dict['message'] = MESSAGE_B
             if Shop.upsert_cs_message(nick, message_dict):
                 print nick + ":" + message_dict['message']
-           
+    logger.info('auto_support_script success')
+
 def renew_account_script(_days = 4):
     """电话续费"""
     
@@ -135,6 +136,7 @@ def renew_account_script(_days = 4):
         #send_email_with_file('zhoujiebing@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
         send_email_with_file('zhangfenfen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
         send_email_with_file('xiaoshouxukai@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
+    logger.info('renew_account_script success')
 
 if __name__ == '__main__':
     auto_support_script()
