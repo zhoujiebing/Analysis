@@ -71,10 +71,9 @@ class UserCenter:
                         #合并 优惠 续费 订单
                         if int(next_order['total_pay_fee']) <= 500 and next_order['biz_type'] == 2:
                             order['order_cycle_end'] = next_order['order_cycle_end']
-                    if order['order_id'] in refund_ids:
-                        real_orders.append(order)
-                        continue
                     ok_orders.append(order)
+                    if order['order_id'] not in refund_ids:
+                        real_orders.append(order)
             self.user_ok_orders[key] = ok_orders
             self.user_all_orders[key] = real_orders
     
@@ -195,16 +194,19 @@ class UserCenter:
         
         start_date = start_time.date()
         end_date = end_time.date()
-        (pre_market_effect, wangwang_records) = parse_wangwang_talk_record(file_name, \
+        (worker_list, wangwang_records) = parse_wangwang_talk_record(file_name, \
                 start_date, end_date)
-        for worker in pre_market_effect:
+        pre_market_effect = {}
+        for worker in worker_list:
+            pre_market_effect[worker] = {}
             pre_market_effect[worker]['sum_pay'] = 0
             pre_market_effect[worker]['success_count'] = 0
+            pre_market_effect[worker]['service_num'] = 0
 
-        for key in self.user_all_orders.key():
-            nick = key[0]
+        for key in self.user_all_orders:
+            nick = str(key[0])
             orders = self.user_all_orders[key]
-            if key[1] != article_code:
+            if key[1] != article_code or len(orders) == 0:
                 continue
             for i in range(len(orders)):    
                 create_time = orders[i]['create']
@@ -215,14 +217,35 @@ class UserCenter:
                         if create_time < new_time or orders[i]['biz_type'] != 1:
                             continue
                     wangwang_record = wangwang_records[create_date]
-                    worker = wangwang_record.get(nick, None)
-                    if worker:
+                    workers = wangwang_record.get(nick, [])
+                    for worker in workers:
                         pre_market_effect[worker]['sum_pay'] += \
-                                    int(orders[i]['total_pay_fee']) / 100
+                                    float(orders[i]['total_pay_fee']) / 100.0 / len(workers)
                         pre_market_effect[worker]['success_count'] += 1
 
                 elif create_time > end_time:
                     break
+        
+        for date in wangwang_records:
+            wangwang_record = wangwang_records[date]
+            for service_nick in wangwang_record:
+                key = (service_nick.decode('utf-8'), article_code)
+                orders = self.user_all_orders.get(key, [])
+                if len(orders) > 0:
+                    before_orders = filter(lambda order:order['create'].date() < date, orders)
+                    if len(before_orders) > 0:
+                        if before_orders[-1]['order_cycle_end'].date() >= date:
+                            #过滤date 当天没过期的老客户
+                            continue
+                        if len(orders) == len(before_orders) and \
+                                before_orders[-1]['order_cycle_end'].date() \
+                                    + datetime.timedelta(days=15) >= date:
+                            #过滤date 时 过期未超过15 天
+                            continue
+
+                workers = wangwang_record[service_nick]
+                for worker in workers:
+                    pre_market_effect[worker]['service_num'] += 1
 
         for key in pre_market_effect:
             pre_market_effect[key]['renew'] = pre_market_effect[key]['success_count'] /\
@@ -400,10 +423,10 @@ def cycle_report_script(file_name=''):
             datetime.datetime(2013,6,7,0,0), 'ts-1796606', file_name)
 
     print '售前绩效分析'
-    print '客服,奖金,成功数,服务数,转化率'
+    print '客服,奖金,成功数,服务数,寻单转化率'
     for worker in pre_market_effect:
         effect = pre_market_effect[worker]
-        print '%s, %d, %d, %d, %.3f' % (worker, effect['sum_pay'], \
+        print '%s, %.1f, %d, %d, %.3f' % (worker, effect['sum_pay'], \
             effect['success_count'], effect['service_num'], effect['renew'])
 
     worker_renew_effect = user_obj.analysis_worker_renew2(datetime.datetime(2013,5,28,0,0),  \
@@ -441,7 +464,7 @@ def special_report_script():
 
 if __name__ == '__main__':
     daily_report_script()
-    #cycle_report_script()
+    #cycle_report_script(CURRENT_DIR + 'data/wangwang_record.csv')
     #user_obj = UserCenter(['ts-1796606'])
     #user_obj.collect_online_info()
     #user_obj.analysis_orders_statistics()

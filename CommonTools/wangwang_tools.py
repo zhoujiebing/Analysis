@@ -18,7 +18,7 @@ from CommonTools.string_tools import parser_string_to_date
 def parse_wangwang_talk_record(file_name, start_date, end_date):
     """解析聊天nick"""
     
-    pre_market_effect = {}
+    worker_list = []
     wangwang_records = {}
     init_data = start_date
     while init_data <= end_date:
@@ -37,16 +37,16 @@ def parse_wangwang_talk_record(file_name, start_date, end_date):
         if service_nick.find(':') != -1:
             service_nick = service_nick.split(':')[0]
         if start_date <= service_date <= end_date:
-            if not pre_market_effect.has_key(worker):
-                pre_market_effect[worker] = {'service_num':0}
+            if not worker in worker_list:
+                worker_list.append(worker)
+            if not wangwang_records[service_date].has_key(service_nick):
+                wangwang_records[service_date][service_nick] = []
+            wangwang_records[service_date][service_nick].append(worker)
 
-            pre_market_effect[worker]['service_num'] += 1
-            wangwang_records[service_date][service_nick] = worker 
-
-    return (pre_market_effect, wangwang_records)
+    return (worker_list, wangwang_records)
 
 if __name__ == '__main__':
-    (pre_market_effect, wangwang_records) = parse_wangwang_talk_record('wangwang_record.csv', \
+    (pre_market_effect, wangwang_records) = parse_wangwang_talk_record('../DataAnalysis/data/wangwang_record.csv', \
             datetime.date(2013,6,1), datetime.date(2013,6,7))
     import pdb
     pdb.set_trace()
