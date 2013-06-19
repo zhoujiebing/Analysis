@@ -356,15 +356,22 @@ def daily_report_script():
     
     today = datetime.datetime.combine(datetime.date.today(), datetime.time())
     daily_report_date = today - datetime.timedelta(days=11)
-    user_obj = UserCenter()
-    user_obj.collect_online_info()
-    return_str = user_obj.analysis_orders_renew(daily_report_date, daily_report_date, ['ts-1796606'])
-    return_str += user_obj.analysis_worker_arrange()
-    return_str += user_obj.analysis_out_of_date_num(today, today+datetime.timedelta(days=6),\
-            ['ts-1796606', 'ts-1797607'])
-    send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
-    send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
-    send_email_with_text('tangxijin@maimiaotech.com', return_str, 'UserCenter统计')
+    try:
+        user_obj = UserCenter()
+        user_obj.collect_online_info()
+        return_str = user_obj.analysis_orders_renew(daily_report_date, daily_report_date, ['ts-1796606'])
+        return_str += user_obj.analysis_worker_arrange()
+        return_str += user_obj.analysis_out_of_date_num(today, today+datetime.timedelta(days=6),\
+                ['ts-1796606', 'ts-1797607'])
+        send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
+        send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
+        send_email_with_text('tangxijin@maimiaotech.com', return_str, 'UserCenter统计')
+    except Exception,e:
+        logger.exception('daily_report_script error: %s' % (str(e)))
+        send_sms('13738141586', 'daily_report_script error: %s' % (str(e)))
+    else:
+        logger.info('daily_report_script ok')
+
 
 def cycle_report_script():
     """周期统计报表"""

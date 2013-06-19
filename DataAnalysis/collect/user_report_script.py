@@ -82,6 +82,15 @@ def collect_renew_nicks(start_time, end_time, article_code_list=['ts-1796606', '
     return article_nicks
 
 def auto_support_script():
+    try:
+        auto_support_service()
+    except Exception,e:
+        logger.exception('auto_support_script error: %s', str(e))
+        send_sms('13738141586', 'auto_support_script error: %s' % (str(e)))
+    else:
+        logger.info('auto_support_script ok')
+
+def auto_support_service():
     """自动生成特殊服务支持"""
     MESSAGE_A = '亲爱的掌柜您好~谨代表麦苗团队全体成员欢迎您入驻省油宝！不知亲这两天使用下来感觉怎么样呢？有问题要随时和我联系哦，如果我不在线，亲可以留言呢~！期待与亲有更多的交流，一定竭诚为亲服务的！'
     MESSAGE_B = '亲~您的软件还有3天就要到期了哦~~悄悄过来提醒下，如果亲觉得效果可以要及时续费呢，很期待继续服务亲~如果亲对我们的软件和服务有什么建议，请不要吝啬告诉我哦~~祝亲生意兴隆~！'
@@ -114,7 +123,16 @@ def auto_support_script():
                 print nick + ":" + message_dict['message']
     logger.info('auto_support_script success')
 
-def renew_account_script(_days = 4):
+def renew_account_script():
+    try:
+        renew_account_service()
+    except Exception,e:
+        logger.exception('renew_account_script error: %s', str(e))
+        send_sms('13738141586', 'renew_account_script error: %s' % (str(e)))
+    else:
+        logger.info('renew_account_script ok')
+
+def renew_account_service(_days = 4):
     """电话续费"""
     
     article_code_list = ['ts-1796606']
