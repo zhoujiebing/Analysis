@@ -18,6 +18,7 @@ if __name__ == '__main__':
 import datetime
 from CommonTools.logger import logger
 from CommonTools.send_tools import send_sms, send_email_with_text
+from CommonTools.wangwang_tools import parse_wangwang_talk_record
 from DataAnalysis.conf.settings import CURRENT_DIR
 from user_center.conf.settings import WORKER_DICT, FULL_NUM
 from user_center.services.shop_db_service import ShopDBService
@@ -49,18 +50,18 @@ class UserCenter:
         all_order = OrderDBService.get_all_orders_list()
         #user_ok_orders 排除退款
         self.user_ok_orders = {}
-        self.user_orders = {}
+        self.user_all_orders = {}
 
         for order in all_order:
             key = (order['nick'], order['article_code'])
-            if not self.user_orders.has_key(key):    
-                self.user_orders[key] = []
-            self.user_orders[key].append(order)
+            if not self.user_all_orders.has_key(key):    
+                self.user_all_orders[key] = []
+            self.user_all_orders[key].append(order)
         
-        for key in self.user_orders.keys():
+        for key in self.user_all_orders.keys():
             real_orders = []
             ok_orders = []
-            orders = self.user_orders[key]
+            orders = self.user_all_orders[key]
             orders.sort(key=lambda order:order['order_cycle_start'])
             for i in range(len(orders)):
                 order = orders[i]
@@ -75,7 +76,7 @@ class UserCenter:
                         continue
                     ok_orders.append(order)
             self.user_ok_orders[key] = ok_orders
-            self.user_orders[key] = real_orders
+            self.user_all_orders[key] = real_orders
     
     def analysis_out_of_date_num(self, start_time, end_time, article_code_list):
         """到期用户分析"""
@@ -189,27 +190,44 @@ class UserCenter:
 
         pass
 
-    def analysis_pre_market(self, start_time, end_time, article_code):
+    def analysis_pre_market(self, start_time, end_time, article_code, file_name):
         """售前营销统计"""
+        
+        start_date = start_time.date()
+        end_date = end_time.date()
+        (pre_market_effect, wangwang_records) = parse_wangwang_talk_record(file_name, \
+                start_date, end_date)
+        for worker in pre_market_effect:
+            pre_market_effect[worker]['sum_pay'] = 0
+            pre_market_effect[worker]['success_count'] = 0
 
-        pre_market_effect = {}
-        pre_market_nick = {}
-        for key in self.user_orders.key():
-            orders = self.user_orders[key]
+        for key in self.user_all_orders.key():
+            nick = key[0]
+            orders = self.user_all_orders[key]
             if key[1] != article_code:
                 continue
             for i in range(len(orders)):    
                 create_time = orders[i]['create']
-                
+                create_date = create_time.date()
                 if start_time <= create_time <= end_time:
                     if i > 0:
-                        start_date = orders[i-1]['order_cycle_end'] + datetime.timedelta(days=4)
-                        end_date = orders[i-1]['order_cycle_end'] + datetime.timedelta(days=15)
-                        if start_date <= create_time <= end_date:
-                            phone_renew_effect[worker_id]['sum_pay'] += \
+                        new_time = orders[i-1]['order_cycle_end'] + datetime.timedelta(days=15)
+                        if create_time < new_time or orders[i]['biz_type'] != 1:
+                            continue
+                    wangwang_record = wangwang_records[create_date]
+                    worker = wangwang_record.get(nick, None)
+                    if worker:
+                        pre_market_effect[worker]['sum_pay'] += \
                                     int(orders[i]['total_pay_fee']) / 100
+                        pre_market_effect[worker]['success_count'] += 1
+
                 elif create_time > end_time:
                     break
+
+        for key in pre_market_effect:
+            pre_market_effect[key]['renew'] = pre_market_effect[key]['success_count'] /\
+                    (pre_market_effect[key]['service_num']+0.01)
+        return pre_market_effect
 
     def analysis_phone_renew(self, start_time, end_time, article_code):
         """电话营销统计 月末统计上个月倒数第15天到本月倒数第16天"""
@@ -373,13 +391,24 @@ def daily_report_script():
         logger.info('daily_report_script ok')
 
 
-def cycle_report_script():
+def cycle_report_script(file_name=''):
     """周期统计报表"""
     
     user_obj = UserCenter()
     user_obj.collect_online_info()
+    pre_market_effect = user_obj.analysis_pre_market(datetime.datetime(2013,6,1,0,0), \
+            datetime.datetime(2013,6,7,0,0), 'ts-1796606', file_name)
+
+    print '售前绩效分析'
+    print '客服,奖金,成功数,服务数,转化率'
+    for worker in pre_market_effect:
+        effect = pre_market_effect[worker]
+        print '%s, %d, %d, %d, %.3f' % (worker, effect['sum_pay'], \
+            effect['success_count'], effect['service_num'], effect['renew'])
+
     worker_renew_effect = user_obj.analysis_worker_renew2(datetime.datetime(2013,5,28,0,0),  \
             datetime.datetime(2013,6,14,0,0), 'ts-1796606')
+    
     print '售后绩效分析'
     print '专属客服,奖金,成功数,过期数,续费率'
     for worker_id in worker_renew_effect:
