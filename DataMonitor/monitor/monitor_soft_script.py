@@ -62,7 +62,7 @@ def monitor_soft():
             send_sms('15158877255', comment_info)
             #send XK
             send_sms('13646844762', comment_info)
-
+            send_sms('13588342404', comment_info)
         if marketing_info or order_info:
             #send YB
             send_sms('15858224656', return_info)

@@ -25,7 +25,7 @@ REPORT_KEYS = [
         ['multi_click', int],
         ['multi_cost', float],
         ['multi_cpc', float],
-        ['multi_pay', float],
+        ['multi _pay', float],
         ['multi_pay_count', int],
         ['multi_fav_count', int],
         
@@ -33,11 +33,12 @@ REPORT_KEYS = [
         ['id', str]]
 
 
-MAIN_KEYS = ['pv', 'click', 'cost', 'cpc', 'pay', 'pay_count', 'fav_count', 'roi', 'ctr', 'cvr']
-MAIN_KEYS.extend(['multi_'+key for key in MAIN_KEYS])
+BASE_KEYS = ['pv', 'click', 'cost', 'cpc', 'pay', 'pay_count', 'fav_count', 'roi', 'ctr', 'cvr']
+MAIN_KEYS = BASE_KEYS
+MAIN_KEYS.extend(['multi_'+key for key in BASE_KEYS])
 
 class Report:
-    
+   
     @classmethod
     def parser_report(self, _line):
         """用于解析 report 数据"""
@@ -57,7 +58,21 @@ class Report:
         report_dict['multi_cvr'] = report_dict['multi_pay_count'] / (report_dict['multi_click'] + 0.01)
         report_dict['multi_ctr'] = report_dict['multi_click'] / (report_dict['multi_pv'] + 0.01)
         return report_dict
+   
+    @classmethod
+    def parse_report_file(file_name, filter_fun=None):
+        """解析某个report_file"""
         
+        campaign_list = []
+        for line in file(file_name):
+            campaign = Report.parser_report(line)
+            if campaign:
+                campaign_list.append(campaign)
+        
+        if callable(filter_fun):
+            campaign_list = filter(filter_fun, campaign_list)
+        return campaign_list
+
     @classmethod
     def add_shop(self, report_dict, shop):
         """增加店铺 report 数据"""
@@ -68,6 +83,18 @@ class Report:
         report_dict['multi_cost_percent'] = report_dict['multi_cost'] / (shop['multi_cost'] + 0.000001)
         report_dict['multi_pay_percent'] = report_dict['multi_pay'] / (shop['multi_pay'] + 0.000001)
         report_dict['sid'] = shop['id']
+    
+    @classmethod
+    def add_compare(self, report_dict, compare):
+        """增加对比数据"""
+
+        compare_delta = [] 
+        for key in BASE_KEYS:
+            multi_key = 'multi_'+key
+            compare_key = 'compare_'+key
+            compare_delta.append((float)compare[multi_key] / compare['count_days'] - \
+                    (float)report_dict[multi_key] / compare['count_days'])
+        report_dict['compare_delta'] = compare_delta
 
     @classmethod
     def to_string(self, report):
