@@ -126,13 +126,18 @@ class CollectSYBReport(CollectReport):
             shop_info['days'] = 30
             if shop.has_key('auto_campaign_id'):
                 shop_info[shop['auto_campaign_id']] = '省油宝长尾计划'
-            if shop.get('auto_campaign_init_time', None):
-                shop_info['auto_campaign_days'] = (time_now - shop['auto_campaign_init_time']).days
-            
+                if shop.get('auto_campaign_init_time', None):
+                    shop_info['auto_campaign_days'] = (time_now - shop['auto_campaign_init_time']).days
+                if shop.get('auto_campaign_cancel_status', False):
+                    shop_info[shop['auto_campaign_id']] = '省油宝长尾计划_CANCEL'
+
             if shop.has_key('key_campaign_id'):
                 shop_info[shop['key_campaign_id']] = '省油宝加力计划'
-            if shop.get('key_campaign_init_time', None):
-                shop_info['key_campaign_days'] = (time_now - shop['key_campaign_init_time']).days
+                if shop.get('key_campaign_init_time', None):
+                    shop_info['key_campaign_days'] = (time_now - shop['key_campaign_init_time']).days
+                if shop.get('key_campaign_cancel_status', False):
+                    shop_info[shop['key_campaign_id']] = '省油宝加力计划_CANCEL'
+
             use_days = max(shop_info.get('auto_campaign_days', 0), shop_info.get('key_campaign_days', 0))
             if use_days <= 0:
                 continue

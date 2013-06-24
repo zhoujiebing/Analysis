@@ -35,7 +35,7 @@ def analysis_campaign_problem(file_name, campaign_name):
         if campaign['campaign'] == '账户整体情况':
             shop = campaign
             continue
-        if campaign['campaign'].find(campaign_name) != -1:
+        if campaign['campaign'] == campaign_name:
             if campaign['nick'] != shop['nick']:
                 print '出现不一致:',shop['nick']
             Report.add_shop(campaign, shop)

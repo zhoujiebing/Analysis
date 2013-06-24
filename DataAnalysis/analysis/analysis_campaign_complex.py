@@ -135,6 +135,7 @@ class AnalysisCampaign:
     def analysis_campaign_complex(self, campaign_name):
 
         self.collect_campaigns(campaign_name)
+        cancel_num = 0
         zero_pv = 0
         multi_zero_pv = 0
         
@@ -161,6 +162,9 @@ class AnalysisCampaign:
         avg_click_lower_20 = 0
         
         for campaign in self.campaign_list:
+            if campaign['campaign'] == campaign_name+'_CANCEL':
+                cancel_num += 1
+                continue
             if campaign['pv'] <= 0:
                 zero_pv += 1
             elif campaign['click'] < 20:
@@ -188,12 +192,12 @@ class AnalysisCampaign:
                 if campaign['multi_roi'] >= 2:
                     multi_roi_bigger_2 += 1
         
-        campaign_num = len(self.campaign_list) 
+        campaign_num = len(self.campaign_list) - cancel_num
         unzero_pv = campaign_num - zero_pv
         multi_unzero_pv = campaign_num - multi_zero_pv
         
         content = '**********'+campaign_name + ' 分析**********\n'
-        content += '总计划数量：%d\n' % (campaign_num)
+        content += '总计划数量：%d, 停用数量：%d\n' % (campaign_num, cancel_num)
         content += '\n----------单天报表分析----------\n'
         content += '昨日 展现为0数：%d, 占比：%.1f, 不为0数：%d\n' % (zero_pv, \
                 float(zero_pv) / campaign_num, unzero_pv)

@@ -41,7 +41,7 @@ def analysis(campaigns, _number_dict):
     """
     main method
     """
-    if len(campaigns) < 1 or campaigns[0]['campaign'].find('省油宝长尾计划') == -1:
+    if len(campaigns) < 1 or campaigns[0]['campaign'] == '省油宝长尾计划':
         return
     syb = campaigns[0]
     FLAG_LIST = [False for x in range(len(SOFT_LIST))]
@@ -76,7 +76,7 @@ def analysis_campaign_horizontal(file_name):
         if not campaign:
             continue
         if not NICK or campaign['nick'] == NICK:
-            if campaign['campaign'].find('省油宝长尾计划') != -1:
+            if campaign['campaign'] == '省油宝长尾计划':
                 CAMPAIGN_LIST.insert(0, campaign)
             else:
                 CAMPAIGN_LIST.append(campaign)

@@ -72,7 +72,7 @@ def analysis_campaign_simple(file_name):
         if not report:
             continue
         for campaign_name in soft_list:
-            if report['campaign'].find(campaign_name) != -1:
+            if report['campaign'] == campaign_name:
                 soft_statistics_dict[campaign_name].statistics(report)
         
     content = ''
