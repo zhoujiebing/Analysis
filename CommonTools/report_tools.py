@@ -25,7 +25,7 @@ REPORT_KEYS = [
         ['multi_click', int],
         ['multi_cost', float],
         ['multi_cpc', float],
-        ['multi _pay', float],
+        ['multi_pay', float],
         ['multi_pay_count', int],
         ['multi_fav_count', int],
         
@@ -34,7 +34,7 @@ REPORT_KEYS = [
 
 
 BASE_KEYS = ['pv', 'click', 'cost', 'cpc', 'pay', 'pay_count', 'fav_count', 'roi', 'ctr', 'cvr']
-MAIN_KEYS = BASE_KEYS
+MAIN_KEYS = BASE_KEYS[:]
 MAIN_KEYS.extend(['multi_'+key for key in BASE_KEYS])
 
 class Report:
@@ -60,7 +60,7 @@ class Report:
         return report_dict
    
     @classmethod
-    def parse_report_file(file_name, filter_fun=None):
+    def parse_report_file(self, file_name, filter_fun=None):
         """解析某个report_file"""
         
         campaign_list = []
@@ -85,15 +85,18 @@ class Report:
         report_dict['sid'] = shop['id']
     
     @classmethod
-    def add_compare(self, report_dict, compare):
+    def add_compare(self, report_dict, compare, daily=True):
         """增加对比数据"""
 
         compare_delta = [] 
         for key in BASE_KEYS:
-            multi_key = 'multi_'+key
             compare_key = 'compare_'+key
-            compare_delta.append((float)compare[multi_key] / compare['count_days'] - \
-                    (float)report_dict[multi_key] / compare['count_days'])
+            if daily:
+                multi_key = 'multi_'+key
+                compare_delta.append(float(compare[multi_key]) / compare['count_days'] - \
+                        float(report_dict[multi_key]) / compare['count_days'])
+            else:
+                compare_delta.append(compare[key] - report_dict[key])
         report_dict['compare_delta'] = compare_delta
 
     @classmethod

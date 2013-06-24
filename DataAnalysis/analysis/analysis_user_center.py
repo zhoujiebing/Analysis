@@ -211,19 +211,26 @@ class UserCenter:
             for i in range(len(orders)):    
                 create_time = orders[i]['create']
                 create_date = create_time.date()
-                if start_time <= create_time <= end_time:
-                    if i > 0:
-                        new_time = orders[i-1]['order_cycle_end'] + datetime.timedelta(days=15)
-                        if create_time < new_time or orders[i]['biz_type'] != 1:
-                            continue
+                #订单发生时间在 统计时间内
+                if start_date <= create_date <= end_date:
                     wangwang_record = wangwang_records[create_date]
+                    #获取那天和该客户聊天的客服
                     workers = wangwang_record.get(nick, [])
+                    if i > 0:
+                        #非新客户，前面已有订单
+                        if orders[i]['biz_type'] != 1:
+                            #不是新订单
+                            continue
+                        elif create_date <= orders[i-1]['order_cycle_end'].date() + \
+                                datetime.timedelta(days=15):
+                            #是新订单 但未超过15天
+                            continue
                     for worker in workers:
                         pre_market_effect[worker]['sum_pay'] += \
                                     float(orders[i]['total_pay_fee']) / 100.0 / len(workers)
                         pre_market_effect[worker]['success_count'] += 1
 
-                elif create_time > end_time:
+                elif create_date > end_date:
                     break
         
         for date in wangwang_records:
@@ -419,21 +426,20 @@ def cycle_report_script(file_name=''):
     
     user_obj = UserCenter()
     user_obj.collect_online_info()
+    
+    print '售前绩效分析'
+    print '客服,成交额,成功数,服务数,寻单转化率'
     pre_market_effect = user_obj.analysis_pre_market(datetime.datetime(2013,6,1,0,0), \
             datetime.datetime(2013,6,7,0,0), 'ts-1796606', file_name)
-
-    print '售前绩效分析'
-    print '客服,奖金,成功数,服务数,寻单转化率'
     for worker in pre_market_effect:
         effect = pre_market_effect[worker]
         print '%s, %.1f, %d, %d, %.3f' % (worker, effect['sum_pay'], \
             effect['success_count'], effect['service_num'], effect['renew'])
-
-    worker_renew_effect = user_obj.analysis_worker_renew2(datetime.datetime(2013,5,28,0,0),  \
-            datetime.datetime(2013,6,14,0,0), 'ts-1796606')
     
     print '售后绩效分析'
-    print '专属客服,奖金,成功数,过期数,续费率'
+    print '专属客服,成交额,成功数,过期数,续费率'
+    worker_renew_effect = user_obj.analysis_worker_renew2(datetime.datetime(2013,5,28,0,0),  \
+            datetime.datetime(2013,6,14,0,0), 'ts-1796606')
     for worker_id in worker_renew_effect:
         effect = worker_renew_effect[worker_id]
         if worker_id > -1:
@@ -444,7 +450,7 @@ def cycle_report_script(file_name=''):
                 effect['success_count'], effect['fail_count'], effect['renew'])
     
     print '电销绩效分析'
-    print 'id,奖金,成功数,过期数,续费率'
+    print 'id,成交额,成功数,过期数,续费率'
     phone_renew_effect = user_obj.analysis_phone_renew(datetime.datetime(2013,5,26,0,0), \
             datetime.datetime(2013,6,6,0,0), 'ts-1796606')
     for id in phone_renew_effect:

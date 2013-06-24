@@ -88,7 +88,7 @@ def analysis_key_campaign():
         if shop_status.get('key_campaign_cancel_status', True):
             continue
         if edate:
-            print '%s, %s' % (shop_status['nick'], str(edate.date()))
+            print '%s,%s' % (shop_status['nick'], str(edate.date()))
 
 if __name__ == '__main__':
     analysis_key_campaign()
