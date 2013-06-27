@@ -28,6 +28,11 @@ SPID = '5208'
 SP_PASSWORD = 'mm5208'
 DC = '15'
 SEND_MSG_URL = 'http://esms.etonenet.com/sms/mt'
+DIRECTOR = {
+            'PHONE':'13738141586',
+            'EMAIL':'zhoujiebing@maimiaotech.com',
+            'SECRET':'zhoujb.19890211'
+            }
 
 def send_email_with_text(addressee, text, subject):
     """发送文本email"""
@@ -35,12 +40,12 @@ def send_email_with_text(addressee, text, subject):
     msg = MIMEMultipart()
     msg.attach(MIMEText(text, _charset='utf-8'))
     msg['Subject'] = Header(subject, 'utf-8')
-    msg['From'] = 'zhoujiebing@maimiaotech.com'
+    msg['From'] = DIRECTOR['EMAIL']
     msg['To'] = addressee
     try:
         smtp = smtplib.SMTP()
         smtp.connect('smtp.ym.163.com', 25) 
-        smtp.login(msg['From'], 'zhoujb.19890211')                                                                       
+        smtp.login(msg['From'], DIRECTOR['SECRET'])
         smtp.sendmail(msg['From'], msg['To'], msg.as_string())
     except Exception,e:
         logger.exception('send_email: %s' % (str(e)))
@@ -50,14 +55,14 @@ def send_email_with_html(addressee, html, subject):
 
     msg = MIMEMultipart()
     msg['Subject'] = Header(subject, 'utf-8')
-    msg['From'] = 'zhoujiebing@maimiaotech.com'
+    msg['From'] = DIRECTOR['EMAIL']
     msg['To'] = addressee
     html_att = MIMEText(html, 'html', 'utf-8')
     msg.attach(html_att)
     try:
         smtp = smtplib.SMTP()
         smtp.connect('smtp.ym.163.com', 25) 
-        smtp.login(msg['From'], 'zhoujb.19890211')                                                                       
+        smtp.login(msg['From'], DIRECTOR['SECRET'])
         smtp.sendmail(msg['From'], msg['To'], msg.as_string())
     except Exception,e:
         logger.exception('send_email: %s' % (str(e)))
@@ -68,7 +73,7 @@ def send_email_with_file(addressee, text, subject, file_list):
     msg = MIMEMultipart()
     msg.attach(MIMEText(text, _charset='utf-8'))
     msg['Subject'] = Header(subject, 'utf-8')
-    msg['From'] = 'zhoujiebing@maimiaotech.com'
+    msg['From'] = DIRECTOR['EMAIL']
     msg['To'] = addressee
 
     for file_name in file_list:
@@ -85,7 +90,7 @@ def send_email_with_file(addressee, text, subject, file_list):
     try:
         smtp = smtplib.SMTP()
         smtp.connect('smtp.ym.163.com', 25) 
-        smtp.login(msg['From'], 'zhoujb.19890211') 
+        smtp.login(msg['From'], DIRECTOR['SECRET']) 
         smtp.sendmail(msg['From'], addressee, msg.as_string())
     except Exception,e:
         logger.exception('send_email: %s' % (str(e)))
@@ -146,4 +151,5 @@ def send_sms(cellphone, text, retry_times=3):
         send_sms(cellphone,text,retry_times)
 
 if __name__ == '__main__':
-    send_email_with_text('zhoujiebing@maimiaotech.com', 'text', 'subject')
+    send_email_with_text(DIRECTOR['EMAIL'], 'text', 'subject')
+    send_sms(DIRECTOR['PHONE'], u'测试短信')

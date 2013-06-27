@@ -24,7 +24,7 @@ def get_record_order(id_name):
     if len(order_type) >= 3:
         return (order_type[0], order_type[1], int(order_type[2]))
     else:
-        return ('nick','time', 3)
+        return ('nick','time', ORDER_CHECK_SETTING['NUM'])
 
 def write_record_order(id_name, nick, time, num):
     file_obj = file(CACHE_DIR+id_name+'_order', 'w')
@@ -37,7 +37,7 @@ def monitor_order_add(id_name='省油宝', id='ts-1796606'):
     order_list = get_first_page_order(id)
     (old_nick, old_time, num) = get_record_order(id)
 
-    if num >= 3:
+    if num >= ORDER_CHECK_SETTING['NUM']:
         first_order = order_list[0]
         add_order = 0
         for order in order_list:
@@ -46,7 +46,8 @@ def monitor_order_add(id_name='省油宝', id='ts-1796606'):
             add_order += 1
             num = 0
         if add_order < ORDER_CHECK_SETTING['ADD']:
-            return_info = id_name+'30分钟内新增订单数为:%d, 低于警报界限:%d.\n' % (add_order, ORDER_CHECK_SETTING['ADD'])
+            return_info = id_name+'%d分钟内新增订单数为:%d, 低于警报界限:%d.\n' % \
+                    (ORDER_CHECK_SETTING['TIME'], add_order, ORDER_CHECK_SETTING['ADD'])
         print 'add_order:',add_order
         write_record_order(id, first_order['nick'], first_order['payTime'], 0)
     else:

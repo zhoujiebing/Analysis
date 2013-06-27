@@ -17,7 +17,7 @@ if __name__ == '__main__':
     sys.path.append('../../')
 
 import DataMonitor.conf.settings
-from CommonTools.send_tools import send_sms
+from CommonTools.send_tools import send_sms, DIRECTOR
 from CommonTools.logger import logger
 from DataMonitor.monitor.monitor_marketing_cost import monitor_marketing_cost
 from DataMonitor.monitor.monitor_order_add import monitor_order_add
@@ -28,7 +28,7 @@ def monitor_soft_script():
         return_info = monitor_soft() 
     except Exception,e:
         logger.exception('monitor_soft error: %s', str(e))
-        send_sms('13738141586', 'monitor_soft_script error: '+str(e))
+        send_sms(DIRECTOR['PHONE'], 'monitor_soft_script error: '+str(e))
     else:
         logger.info(return_info)
 
@@ -46,14 +46,13 @@ def monitor_soft():
     if current_time.hour in rest_hours:
         return None
      
-    marketing_info = ''
-    #marketing_info = monitor_marketing_cost()
+    #已废弃marketing_info = monitor_marketing_cost()
     order_info = monitor_order_add('省油宝', 'ts-1796606')
     comment_info = monitor_comment_add('省油宝', 'ts-1796606') + monitor_comment_add('北斗', 'ts-1797607')
-    return_info = marketing_info + order_info + comment_info 
+    return_info = order_info + comment_info 
     
     if return_info:
-        #send_sms('13738141586', return_info)
+        #send_sms(DIRECTOR['PHONE'], return_info)
         
         #send XJ
         #send_sms('18658818166', return_info)
@@ -63,7 +62,7 @@ def monitor_soft():
             #send XK
             send_sms('13646844762', comment_info)
             send_sms('13588342404', comment_info)
-        if marketing_info or order_info:
+        if order_info:
             #send YB
             send_sms('15858224656', return_info)
         return 'monitor_soft: ' + return_info

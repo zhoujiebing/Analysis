@@ -1,5 +1,5 @@
 HOME=/home/zhoujiebing/Analysis/DataMonitor/monitor/
-*/10 * * * * python monitor_soft_script.py
+*/1 * * * * python monitor_soft_script.py
 HOME=/home/zhoujiebing/Analysis/DataAnalysis/analysis/
 30 9 * * * python analysis_ztc_order_script.py 
 HOME=/home/zhoujiebing/Analysis/DataAnalysis/collect/
