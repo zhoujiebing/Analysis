@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
 from DataAnalysis.conf.settings import logger, CURRENT_DIR
 from DataAnalysis.db_model.shop_db import Shop 
-from CommonTools.send_tools import send_sms
+from CommonTools.send_tools import send_sms, DIRECTOR
 from CommonTools.report_tools import Report
 from CommonTools.string_tools import parser_string_to_date
 from report_db.services.rpt_sum_search_service import RptSumSearchService
@@ -212,7 +212,7 @@ def collect_report_script():
     
     except Exception,e:
         logger.exception('collect_report_script error: %s', str(e))
-        send_sms('13738141586', 'collect_report_script error: %s' % (str(e)))
+        send_sms(DIRECTOR['PHONE'], 'collect_report_script error: %s' % (str(e)))
     else:
         logger.info('collect_report_script ok')
 
