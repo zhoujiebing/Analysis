@@ -20,7 +20,7 @@ if __name__ == '__main__':
 from DataAnalysis.conf.settings import CURRENT_DIR
 from CommonTools.ztc_order_tools import ZtcOrder, SOFT_CODE
 from CommonTools.logger import logger
-from CommonTools.send_tools import send_sms
+from CommonTools.send_tools import send_sms, DIRECTOR
 
 class ZtcOrderCollect(ZtcOrder):
     
@@ -96,7 +96,7 @@ def collect_order_script(_days=0):
         ztc.write_order()
     except Exception,e:
         logger.error('collect_order_script %s: %s' % (str(today), str(e)))
-        send_sms('13738141586', 'collect_order_script %s: %s' % (str(today), str(e)))
+        send_sms(DIRECTOR['PHONE'], 'collect_order_script %s: %s' % (str(today), str(e)))
     else:
         logger.info('collect_order_script %s ok', str(today))
 

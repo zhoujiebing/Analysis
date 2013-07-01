@@ -18,8 +18,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__),'../../../TaobaoOpenPytho
 CACHE_DIR = '/home/zhoujiebing/Analysis/DataMonitor/cache/'
 MARKET_CHECK_SETTING = {
         'CHANGE':0,
-        'ADD':1
+        'ADD':1,
+        'TIME':10,
+        'NUM':10
         }
 ORDER_CHECK_SETTING = {
-        'ADD':1
+        'ADD':1,
+        'TIME':30,
+        'NUM':30
         }
+

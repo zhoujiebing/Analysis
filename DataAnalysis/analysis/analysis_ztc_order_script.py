@@ -21,7 +21,7 @@ from DataAnalysis.conf.settings import CURRENT_DIR
 from CommonTools.ztc_order_tools import ZtcOrder, SOFT_CODE
 from CommonTools.ztc_report_tools import ZtcReport, ORDER_TYPE, NUM_TYPE, EXACT_TYPE, KEYS, STRNUM, HEAD
 from CommonTools.logger import logger
-from CommonTools.send_tools import send_email_with_html, send_sms
+from CommonTools.send_tools import send_email_with_html, send_sms, DIRECTOR
 
 class ZtcOrderReport(ZtcOrder):
     
@@ -155,7 +155,7 @@ class ZtcOrderReport(ZtcOrder):
         return type_num
 
 def analysis_ztc_order_script():
-    ToMe = 'zhoujiebing@maimiaotech.com'
+    ToMe = DIRECTOR['EMAIL']
     ToAll = 'all@maimiaotech.com'
     try:
         ztc = ZtcOrderReport()
@@ -166,7 +166,7 @@ def analysis_ztc_order_script():
         send_email_with_html(ToAll, html, str(datetime.date.today())+'__直通车软件报表公测版')
     except Exception,e:
         logger.exception('analysis_ztc_order_script error: %s' % (str(e)))
-        send_sms('13738141586', 'analysis_ztc_order_script error: '+str(e))
+        send_sms(DIRECTOR['PHONE'], 'analysis_ztc_order_script error: '+str(e))
     else:
         logger.info('analysis_ztc_order_script ok')
 

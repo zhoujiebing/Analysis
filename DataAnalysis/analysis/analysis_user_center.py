@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
 import datetime
 from CommonTools.logger import logger
-from CommonTools.send_tools import send_sms, send_email_with_text
+from CommonTools.send_tools import send_sms, send_email_with_text, DIRECTOR
 from CommonTools.wangwang_tools import parse_wangwang_talk_record
 from DataAnalysis.conf.settings import CURRENT_DIR
 from user_center.conf.settings import WORKER_DICT, FULL_NUM
@@ -434,12 +434,12 @@ def daily_report_script():
         return_str += user_obj.analysis_worker_arrange()
         return_str += user_obj.analysis_out_of_date_num(today, today+datetime.timedelta(days=6),\
                 ['ts-1796606', 'ts-1797607'])
-        send_email_with_text('zhoujiebing@maimiaotech.com', return_str, 'UserCenter统计')
+        send_email_with_text(DIRECTOR['EMAIL'], return_str, 'UserCenter统计')
         send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
         send_email_with_text('tangxijin@maimiaotech.com', return_str, 'UserCenter统计')
     except Exception,e:
         logger.exception('daily_report_script error: %s' % (str(e)))
-        send_sms('13738141586', 'daily_report_script error: %s' % (str(e)))
+        send_sms(DIRECTOR['PHONE'], 'daily_report_script error: %s' % (str(e)))
     else:
         logger.info('daily_report_script ok')
 

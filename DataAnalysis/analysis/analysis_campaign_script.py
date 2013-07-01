@@ -15,7 +15,7 @@ import datetime
 if __name__ == '__main__':
     sys.path.append('../../')
 
-from CommonTools.send_tools import send_email_with_text, send_sms
+from CommonTools.send_tools import send_email_with_text, send_sms, DIRECTOR
 from CommonTools.logger import logger
 from DataAnalysis.conf.settings import CURRENT_DIR
 from DataAnalysis.analysis.analysis_campaign_simple import analysis_campaign_simple
@@ -40,12 +40,12 @@ def analysis_campaign_script():
         return None
     try:
         content = analysis_campaign(syb_file, bd_file)
-        #send_email_with_text('zhoujiebing@maimiaotech.com', content, today+'_产品报表日常分析')
+        #send_email_with_text(DIRECTOR['EMAIL'], content, today+'_产品报表日常分析')
         send_email_with_text('product@maimiaotech.com', content, today+'_产品报表日常分析')
 
     except Exception,e:
         logger.exception('analysis_campaign error: %s' % (str(e)))
-        send_sms('13738141586', 'analysis_campaign error: %s' % (str(e)))
+        send_sms(DIRECTOR['PHONE'], 'analysis_campaign error: %s' % (str(e)))
     else:
         logger.info('analysis_campaign ok')
 
