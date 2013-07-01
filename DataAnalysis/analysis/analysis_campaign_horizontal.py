@@ -41,7 +41,7 @@ def analysis(campaigns, _number_dict):
     """
     main method
     """
-    if len(campaigns) < 1 or campaigns[0]['campaign'] == '省油宝长尾计划':
+    if len(campaigns) < 1 or campaigns[0]['campaign'] != '省油宝长尾计划':
         return
     syb = campaigns[0]
     FLAG_LIST = [False for x in range(len(SOFT_LIST))]

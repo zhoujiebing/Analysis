@@ -189,7 +189,7 @@ class UserCenter:
 
         pass
 
-    def analysis_pre_market(self, start_time, end_time, article_code, file_name):
+    def analysis_pre_market(self, start_time, end_time, article_code_list, file_name):
         """售前营销统计"""
         
         start_date = start_time.date()
@@ -202,11 +202,18 @@ class UserCenter:
             pre_market_effect[worker]['sum_pay'] = 0
             pre_market_effect[worker]['success_count'] = 0
             pre_market_effect[worker]['service_num'] = 0
+        success_data = {}
+        for key in wangwang_records:
+            success_data[key] = {}
+            for article_code in article_code_list:
+                success_data[key][article_code] = set([])
 
+        #计算成功的转化
         for key in self.user_all_orders:
             nick = str(key[0])
+            article_code = str(key[1])
             orders = self.user_all_orders[key]
-            if key[1] != article_code or len(orders) == 0:
+            if article_code not in article_code_list or len(orders) == 0:
                 continue
             for i in range(len(orders)):    
                 create_time = orders[i]['create']
@@ -225,6 +232,7 @@ class UserCenter:
                                 datetime.timedelta(days=15):
                             #是新订单 但未超过15天
                             continue
+                    success_data[create_date][article_code].add(nick)
                     for worker in workers:
                         pre_market_effect[worker]['sum_pay'] += \
                                     float(orders[i]['total_pay_fee']) / 100.0 / len(workers)
@@ -233,26 +241,41 @@ class UserCenter:
                 elif create_date > end_date:
                     break
         
+        #计算服务数量
         for date in wangwang_records:
             wangwang_record = wangwang_records[date]
+            success_nick = success_data[date]
             for service_nick in wangwang_record:
-                key = (service_nick.decode('utf-8'), article_code)
-                orders = self.user_all_orders.get(key, [])
-                if len(orders) > 0:
-                    before_orders = filter(lambda order:order['create'].date() < date, orders)
-                    if len(before_orders) > 0:
-                        if before_orders[-1]['order_cycle_end'].date() >= date:
-                            #过滤date 当天没过期的老客户
-                            continue
-                        if len(orders) == len(before_orders) and \
-                                before_orders[-1]['order_cycle_end'].date() \
-                                    + datetime.timedelta(days=15) >= date:
-                            #过滤date 时 过期未超过15 天
-                            continue
+                flag = True
+                check_article_code = []
+                for article_code in article_code_list:
+                    #如果该nick在那天买了article_code,那只看article_code
+                    if service_nick in success_nick[article_code]:
+                        check_article_code.append(article_code)
+                if len(check_article_code) == 0:
+                    #如果用户啥都没买，那就都看看
+                    check_article_code.extend(article_code_list)
 
-                workers = wangwang_record[service_nick]
-                for worker in workers:
-                    pre_market_effect[worker]['service_num'] += 1
+                for article_code in check_article_code:
+                    key = (service_nick.decode('utf-8'), article_code)
+                    orders = self.user_all_orders.get(key, [])
+                    if len(orders) > 0:
+                        before_orders = filter(lambda order:order['create'].date() < date, orders)
+                        if len(before_orders) > 0:
+                            if before_orders[-1]['order_cycle_end'].date() >= date:
+                                #过滤date 当天没过期的老客户
+                                flag = False
+                                continue
+                            if len(orders) == len(before_orders) and \
+                                    before_orders[-1]['order_cycle_end'].date() \
+                                        + datetime.timedelta(days=15) >= date:
+                                #过滤date 时 过期未超过15 天
+                                flag = False
+                                continue
+                if flag:
+                    workers = wangwang_record[service_nick]
+                    for worker in workers:
+                        pre_market_effect[worker]['service_num'] += 1
 
         for key in pre_market_effect:
             pre_market_effect[key]['renew'] = pre_market_effect[key]['success_count'] /\
@@ -429,8 +452,8 @@ def cycle_report_script(file_name=''):
     
     print '售前绩效分析'
     print '客服,成交额,成功数,服务数,寻单转化率'
-    pre_market_effect = user_obj.analysis_pre_market(datetime.datetime(2013,6,1,0,0), \
-            datetime.datetime(2013,6,7,0,0), 'ts-1796606', file_name)
+    pre_market_effect = user_obj.analysis_pre_market(datetime.datetime(2013,5,31,0,0), \
+            datetime.datetime(2013,6,27,0,0), ['ts-1796606', 'ts-1797607'], file_name)
     for worker in pre_market_effect:
         effect = pre_market_effect[worker]
         print '%s, %.1f, %d, %d, %.3f' % (worker, effect['sum_pay'], \
