@@ -15,7 +15,7 @@ if __name__ == '__main__':
 import os
 import datetime
 from DataAnalysis.conf.settings import logger, CURRENT_DIR
-from CommonTools.send_tools import send_email_with_file
+from CommonTools.send_tools import send_email_with_file, DIRECTOR
 from CommonTools.report_tools import Report, MAIN_KEYS 
 from user_center.services.order_db_service import OrderDBService
 from DataAnalysis.db_model.shop_db import Shop
@@ -86,10 +86,34 @@ def auto_support_script():
         auto_support_service()
     except Exception,e:
         logger.exception('auto_support_script error: %s', str(e))
-        send_sms('13738141586', 'auto_support_script error: %s' % (str(e)))
+        send_sms(DIRECTOR['PHONE'], 'auto_support_script error: %s' % (str(e)))
     else:
         logger.info('auto_support_script ok')
 
+def special_content_service():
+    """将淘宝给我们的建议放入到自动留言里"""
+
+    #加载留言模版
+    content_list = ['下标从1开始']
+    content = ''
+    for line in file('content_template.csv'):
+        if not line:
+            content_list.append(content)
+            content = ''
+        content += line
+    
+    #加载留言用户
+    nicks_list = file('content_nick.csv').read().split('\n')
+    for line in nicks_list:
+        line_data = line.split(',')
+        if len(line_data) >= 2:
+            id = int(line_data[0])
+            content = content_list[id]
+            for nick in line_data[1:]:
+                message_dict = {'status':'new', 'worker':'', 'message':content}
+                #if Shop.upsert_cs_message(nick, message_dict):
+                print nick + ":" + message_dict['message']
+        
 def auto_support_service():
     """自动生成特殊服务支持"""
     MESSAGE_A = '亲爱的掌柜您好~谨代表麦苗团队全体成员欢迎您入驻省油宝！不知亲这两天使用下来感觉怎么样呢？有问题要随时和我联系哦，如果我不在线，亲可以留言呢~！期待与亲有更多的交流，一定竭诚为亲服务的！'
