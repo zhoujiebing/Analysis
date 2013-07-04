@@ -15,20 +15,23 @@ if __name__ == '__main__':
 from CommonTools.report_tools import Report, MAIN_KEYS 
 from DataAnalysis.db_model.shop_db import Shop 
 
-def analysis_campaign_complex(file_name, campaign_name):
+def analysis_campaign_complex(file_name, campaign_name, nick_list=[]):
     """详细分析 某个计划"""
     
-    analysis_obj = AnalysisCampaign(file_name)
+    analysis_obj = AnalysisCampaign(file_name, nick_list)
     return analysis_obj.analysis_campaign_complex(campaign_name)
 
 class AnalysisCampaign:
     
-    def __init__(self, file_name): 
+    def __init__(self, file_name, nick_list=[]): 
         self.report_list = []
         for line in file(file_name):
             campaign = Report.parser_report(line)
             if not campaign:
                 continue
+            if len(nick_list) > 0:
+                if campaign['nick'] not in nick_list:
+                    continue
             self.report_list.append(campaign)
     
     def collect_campaigns(self, campaign_name):
@@ -162,7 +165,7 @@ class AnalysisCampaign:
         avg_click_lower_20 = 0
         
         for campaign in self.campaign_list:
-            if campaign['campaign'] == campaign_name+'_CANCEL':
+            if campaign['campaign'].find('CANCEL') != -1:
                 cancel_num += 1
                 continue
             if campaign['pv'] <= 0:
