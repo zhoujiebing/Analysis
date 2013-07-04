@@ -180,6 +180,7 @@ def renew_account_service(_days = 4):
         #send_email_with_file('zhoujiebing@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
         send_email_with_file('zhangfenfen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
         send_email_with_file('xiaoshouxukai@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
+        send_email_with_file('chenlifen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
     logger.info('renew_account_script success')
 
 if __name__ == '__main__':
