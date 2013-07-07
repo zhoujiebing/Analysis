@@ -46,7 +46,7 @@ def parse_wangwang_talk_record(file_name, start_date, end_date):
     return (worker_list, wangwang_records)
 
 if __name__ == '__main__':
-    (pre_market_effect, wangwang_records) = parse_wangwang_talk_record('../DataAnalysis/data/wangwang_record.csv', \
-            datetime.date(2013,6,1), datetime.date(2013,6,7))
+    (worker_list, wangwang_records) = parse_wangwang_talk_record('../DataAnalysis/data/wangwang_record.csv', \
+            datetime.date(2013,5,31), datetime.date(2013,6,27))
     import pdb
     pdb.set_trace()

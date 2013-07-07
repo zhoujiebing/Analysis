@@ -142,6 +142,7 @@ def send_sms(cellphone, text, retry_times=3):
         dict = _parse_sms_response(response.read())
         if dict.get('mterrcode',None) != '000':
             logger.error('send message to %s unsuccessfully:response error'%(cellphone,))
+            logger.error('error dict: %s' % (str(dict)))
             send_sms(cellphone,text,retry_times)
     except urllib2.HTTPError,e:
         logger.error('send message to %s unsuccessfully:url connect error'%(cellphone,))
@@ -151,5 +152,5 @@ def send_sms(cellphone, text, retry_times=3):
         send_sms(cellphone,text,retry_times)
 
 if __name__ == '__main__':
-    send_email_with_text(DIRECTOR['EMAIL'], 'text', 'subject')
+    #send_email_with_text(DIRECTOR['EMAIL'], 'text', 'subject')
     send_sms(DIRECTOR['PHONE'], u'测试短信')

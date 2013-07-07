@@ -18,7 +18,7 @@ if __name__ == '__main__':
 import random
 import datetime
 from CommonTools.logger import logger
-from CommonTools.send_tools import send_sms
+from CommonTools.send_tools import send_sms, DIRECTOR
 from DataAnalysis.conf.settings import CURRENT_DIR
 from user_center.conf.settings import WORKER_DICT
 from user_center.services.shop_db_service import ShopDBService
@@ -78,7 +78,7 @@ class UserCenter:
             if order['order_cycle_start'] > old_order['order_cycle_start']:
                 self.user_order[key] = order
         if not order_flag:
-            send_sms('13738141586',str(order_time)+'的订单没有抓取成功')
+            send_sms(DIRECTOR['PHONE'],str(order_time)+'的订单没有抓取成功')
 
         #获取所有服务支持
         all_support = SupportDBService.get_all_supports_list()
@@ -314,7 +314,7 @@ def daily_update_script():
         user_obj.update_online()
     except Exception,e:
         logger.exception('user_center update error: %s', str(e))
-        send_sms('13738141586', 'user_center update error: '+str(e))
+        send_sms(DIRECTOR['PHONE'], 'user_center update error: '+str(e))
     else:
         logger.info('user_center update finish')
 
