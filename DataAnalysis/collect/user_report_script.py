@@ -96,23 +96,25 @@ def special_content_service():
     #加载留言模版
     content_list = ['下标从1开始']
     content = ''
-    for line in file('content_template.csv'):
-        if not line:
+    for line in file(CURRENT_DIR+'data/content_template.csv'):
+        if line == '\r\n':
             content_list.append(content)
             content = ''
         content += line
     
     #加载留言用户
-    nicks_list = file('content_nick.csv').read().split('\n')
+    nicks_list = file(CURRENT_DIR+'data/content_nick.csv').read().split('\n')
     for line in nicks_list:
         line_data = line.split(',')
         if len(line_data) >= 2:
             id = int(line_data[0])
             content = content_list[id]
             for nick in line_data[1:]:
+                if not nick:
+                    break
                 message_dict = {'status':'new', 'worker':'', 'message':content}
-                #if Shop.upsert_cs_message(nick, message_dict):
-                print nick + ":" + message_dict['message']
+                if Shop.upsert_cs_message(nick, message_dict):
+                    print nick + ":" + str(id)
         
 def auto_support_service():
     """自动生成特殊服务支持"""
@@ -178,7 +180,9 @@ def renew_account_service(_days = 4):
         #send_email_with_file('zhoujiebing@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
         send_email_with_file('zhangfenfen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
         send_email_with_file('xiaoshouxukai@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
+        send_email_with_file('chenlifen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
     logger.info('renew_account_script success')
 
 if __name__ == '__main__':
-    auto_support_script()
+    #auto_support_script()
+    special_content_service()

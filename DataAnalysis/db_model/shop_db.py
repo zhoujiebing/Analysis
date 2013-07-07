@@ -81,23 +81,5 @@ def analysis_deal_keyword():
         else:
             print '为空 %s, %s, %s' % (shop_status['nick'], str(sdate), str(edate))
 
-def analysis_key_campaign():
-    shop_status_list = Shop.get_all_normal_shop_status(2)
-    for shop_status in shop_status_list:
-        edate = shop_status.get('key_campaign_optimize_time', None)
-        if shop_status.get('key_campaign_cancel_status', True):
-            continue
-        if edate:
-            print '%s,%s' % (shop_status['nick'], str(edate.date()))
-
-def analysis_key_campaign_cancle(key='key'):
-    shop_status_list = Shop.get_all_normal_shop_status(2)
-    cancel_num = 1
-    for shop in shop_status_list:
-        if shop.has_key(key+'_campaign_id'):
-            if shop.get(key+'_campaign_cancel_status', False):
-                cancel_num += 1
-    print 'cancel_num: ', cancel_num
 if __name__ == '__main__':
-    #analysis_key_campaign()
-    analysis_key_campaign_cancle('auto')
+    analysis_deal_keyword()
