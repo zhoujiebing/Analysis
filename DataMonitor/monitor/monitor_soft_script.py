@@ -10,8 +10,6 @@
 
 """
 import sys
-import logging
-logger = logging.getLogger()
 import datetime
 if __name__ == '__main__':
     sys.path.append('../../')
