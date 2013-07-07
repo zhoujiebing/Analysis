@@ -72,6 +72,24 @@ class Report:
         if callable(filter_fun):
             campaign_list = filter(filter_fun, campaign_list)
         return campaign_list
+    
+    @classmethod
+    def parser_nick_report(self, file_name, nick):
+        """查询某个nick的report"""
+        
+        campaign_list = []
+        for line in file(file_name):
+            if line.find(nick) != -1:
+                campaign = Report.parser_report(line)
+                if campaign:
+                    campaign_list.append(campaign)
+            else:
+                if len(campaign_list) > 0:
+                    break
+        for campaign in campaign_list:
+            print '%s, %d' % (campaign['campaign'], campaign['count_days'])
+            for key in MAIN_KEYS:
+                print '%s: %s' % (key, str(campaign[key]))
 
     @classmethod
     def add_shop(self, report_dict, shop):
@@ -156,4 +174,14 @@ class Report:
             report['campaign'] = shop.get(campaign['campaign_id'], campaign['title'])
             report['campaign'] = report['campaign'].replace(',', '逗号')
         return report 
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 2:
+        print 'python report_tools.py 2013-04-16 chinchinstyle'
+        exit(0)
+    nick = str(sys.argv[2])
+    file_name = '/home/zhoujiebing/Analysis/DataAnalysis/data/report_data/syb_report'+\
+            str(sys.argv[1])+'.csv'
+    Report.parser_nick_report(file_name, nick)
 

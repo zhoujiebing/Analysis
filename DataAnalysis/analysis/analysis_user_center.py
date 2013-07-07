@@ -25,6 +25,7 @@ from user_center.services.shop_db_service import ShopDBService
 from user_center.services.order_db_service import OrderDBService
 from user_center.services.refund_db_service import RefundDBService
 from user_center.services.support_db_service import SupportDBService
+from DataAnalysis.analysis.analysis_campaign_complex import analysis_campaign_complex
 
 class UserCenter:
 
@@ -118,9 +119,26 @@ class UserCenter:
 
         return return_str
 
+    def analysis_renew_report(self, file_date):
+        """配合analysis_orders_renew使用"""
+        
+        file_name = CURRENT_DIR+('/data/report_data/syb_report%s.csv' % str(file_date))
+        sucess_content = analysis_campaign_complex(file_name, '省油宝', self.success_nick_list)
+        fail_content = analysis_campaign_complex(file_name, '省油宝', self.fail_nick_list)
+        print sucess_content
+        print '--------------------------'
+        print fail_content
+        import random
+        nick_list = random.sample(self.fail_nick_list, 20)
+        for nick in nick_list:
+            print nick
+
     def analysis_orders_renew(self, start_time, end_time, article_code_list):
         """续费率统计"""
-       
+        
+        self.success_nick_list = []
+        self.fail_nick_list = []
+
         some_days = [-10, -3, 0, 3, 7, 10]
         some_day_count = {}
         success_count = {}
@@ -147,10 +165,12 @@ class UserCenter:
                             if delay_days > days:
                                 continue
                             some_day_count[(article_code, days)] += 1
+                        self.success_nick_list.append(orders[i]['nick'])
 
                     else:
                         fail_count[article_code] += 1
-                    
+                        self.fail_nick_list.append(orders[i]['nick'])
+
                     break
                 elif deadline > end_time:
                     break
@@ -492,8 +512,11 @@ def special_report_script():
     print return_str
 
 if __name__ == '__main__':
-    daily_report_script()
+    #daily_report_script()
     #cycle_report_script(CURRENT_DIR + 'data/wangwang_record.csv')
-    #user_obj = UserCenter(['ts-1796606'])
-    #user_obj.collect_online_info()
-    #user_obj.analysis_orders_statistics()
+    user_obj = UserCenter()
+    user_obj.collect_online_info()
+    return_str = user_obj.analysis_orders_renew(datetime.datetime(2013,7,3,0,0), \
+            datetime.datetime(2013,7,4,23,59), ['ts-1796606'])
+    print return_str
+    user_obj.analysis_renew_report(datetime.date(2013,7,2))
