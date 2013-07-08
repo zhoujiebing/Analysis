@@ -17,6 +17,6 @@ send_add_order_and_support()
 #日常订单统计报表
 daily_report_script()
 #电话续费报表
-renew_account_script()
+#renew_account_script()
 #自动留言
 auto_support_script()

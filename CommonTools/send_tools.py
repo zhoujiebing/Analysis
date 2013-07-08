@@ -29,9 +29,9 @@ SP_PASSWORD = 'mm5208'
 DC = '15'
 SEND_MSG_URL = 'http://esms.etonenet.com/sms/mt'
 DIRECTOR = {
-            'PHONE':'13738141586',
-            'EMAIL':'zhoujiebing@maimiaotech.com',
-            'SECRET':'zhoujb.19890211'
+            'PHONE':'15068116152',
+            'EMAIL':'xieguanfu@maimiaotech.com',
+            'SECRET':'xgf612257'
             }
 
 def send_email_with_text(addressee, text, subject):

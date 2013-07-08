@@ -15,7 +15,8 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../../comm_lib/'))
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../../TaobaoOpenPythonSDK/'))
 
-CACHE_DIR = '/home/zhoujiebing/Analysis/DataMonitor/cache/'
+CURRENT_PATH=os.path.normpath(os.path.join(os.path.dirname(__file__),"../"))
+CACHE_DIR = CURRENT_PATH+'/cache/'
 MARKET_CHECK_SETTING = {
         'CHANGE':0,
         'ADD':1,

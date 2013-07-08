@@ -456,7 +456,7 @@ def daily_report_script():
                 ['ts-1796606', 'ts-1797607'])
         send_email_with_text(DIRECTOR['EMAIL'], return_str, 'UserCenter统计')
         send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
-        send_email_with_text('tangxijin@maimiaotech.com', return_str, 'UserCenter统计')
+        #send_email_with_text('tangxijin@maimiaotech.com', return_str, 'UserCenter统计')
     except Exception,e:
         logger.exception('daily_report_script error: %s' % (str(e)))
         send_sms(DIRECTOR['PHONE'], 'daily_report_script error: %s' % (str(e)))
@@ -520,3 +520,4 @@ if __name__ == '__main__':
             datetime.datetime(2013,7,4,23,59), ['ts-1796606'])
     print return_str
     user_obj.analysis_renew_report(datetime.date(2013,7,2))
+    #daily_report_script()
