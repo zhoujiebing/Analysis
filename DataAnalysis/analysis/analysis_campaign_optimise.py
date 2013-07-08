@@ -71,13 +71,13 @@ def analysis_campaign_status():
             auto_campaign_optimize[date] = 0
     
     content = ''
-    sum_campaign = sum(key_campaign_optimize.values())
+    sum_campaign = sum(key_campaign_optimize.values()) + 0.01
     content += '省油宝加力计划总数:%d\n' % (sum_campaign)
     for date in date_list:
         content += '%s: %d, %.2f\n' % (str(date), \
              key_campaign_optimize[date], key_campaign_optimize[date] / float(sum_campaign))
 
-    sum_campaign = sum(auto_campaign_optimize.values())
+    sum_campaign = sum(auto_campaign_optimize.values()) + 0.01
     content += '\n省油宝长尾计划总数:%d\n' % (sum_campaign)
     for date in date_list:
         content += '%s: %d, %.2f\n' % (str(date), \

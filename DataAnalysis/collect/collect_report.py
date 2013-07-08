@@ -124,11 +124,11 @@ class CollectSYBReport(CollectReport):
             if not shop_info:
                 continue
             shop_info['days'] = 30
-            use_days = []
+            use_days = [0]
             campaign_ids = shop.get('auto_campaign_ids', [])
             for campaign_id in campaign_ids:
                 campaign_setting = shop[str(campaign_id)]
-                shop_info[campaign_id] = '省油宝长尾计划‘
+                shop_info[campaign_id] = '省油宝长尾计划'
                 if campaign_setting.get('auto_campaign_init_time', False):
                     use_days.append((time_now-campaign_setting['auto_campaign_init_time']).days)
                 if campaign_setting.get('auto_campaign_cancel_status', False):
