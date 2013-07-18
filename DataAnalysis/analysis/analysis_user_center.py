@@ -148,7 +148,6 @@ class UserCenter:
             fail_count[key] = 0
             for days in some_days:
                 some_day_count[(key,days)] = 0 
-
         for key in self.user_ok_orders.keys():
             orders = self.user_ok_orders[key]
             article_code = key[1]
@@ -174,7 +173,6 @@ class UserCenter:
                     break
                 elif deadline > end_time:
                     break
-        
         return_str = ''
         header = '产品,统计开始时间,统计结束时间,过期用户数,截止当下的续费数,续费率\n'
         some_days_str = ','.join([str(day)+'天续费' for day in some_days]) + '\n'
@@ -454,9 +452,10 @@ def daily_report_script():
         return_str += user_obj.analysis_worker_arrange()
         return_str += user_obj.analysis_out_of_date_num(today, today+datetime.timedelta(days=6),\
                 ['ts-1796606', 'ts-1797607'])
-        send_email_with_text(DIRECTOR['EMAIL'], return_str, 'UserCenter统计')
-        send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
+        #send_email_with_text(DIRECTOR['EMAIL'], return_str, 'UserCenter统计')
+        #send_email_with_text('zhangfenfen@maimiaotech.com', return_str, 'UserCenter统计')
         #send_email_with_text('tangxijin@maimiaotech.com', return_str, 'UserCenter统计')
+        send_email_with_text('product@maimiaotech.com', return_str, 'UserCenter统计')
     except Exception,e:
         logger.exception('daily_report_script error: %s' % (str(e)))
         send_sms(DIRECTOR['PHONE'], 'daily_report_script error: %s' % (str(e)))
@@ -515,9 +514,10 @@ if __name__ == '__main__':
     #daily_report_script()
     #cycle_report_script(CURRENT_DIR + 'data/wangwang_record.csv')
     user_obj = UserCenter()
-    user_obj.collect_online_info()
-    return_str = user_obj.analysis_orders_renew(datetime.datetime(2013,7,3,0,0), \
-            datetime.datetime(2013,7,4,23,59), ['ts-1796606'])
-    print return_str
-    user_obj.analysis_renew_report(datetime.date(2013,7,2))
+    #user_obj.collect_online_info()
+    #return_str = user_obj.analysis_orders_renew(datetime.datetime(2013,6,1,0,0), \
+            #        datetime.datetime(2013,6,30,23,59), ['ts-1796606'])
+    #print return_str
+    #user_obj.analysis_renew_report(datetime.date(2013,7,2))
     #daily_report_script()
+    #print user_obj.analysis_pre_market(datetime.datetime(2013,7,1,0,0), datetime.datetime(2013,7,15,0,0), ['ts-1796606'],CURRENT_DIR + 'data/wangwang_0701_0715.csv')
