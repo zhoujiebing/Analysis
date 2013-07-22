@@ -83,8 +83,9 @@ def analysis_campaign_status():
         content += '%s: %d, %.2f\n' % (str(date), \
              auto_campaign_optimize[date], auto_campaign_optimize[date] / float(sum_campaign))
 
-    send_email_with_text(DIRECTOR['EMAIL'], content, '省油宝优化频率监测')
-    send_email_with_text('chenke@maimiaotech.com', content, '省油宝优化频率监测')
+    send_email_with_text(DIRECTOR['EMAIL'], content, '省油宝优化频率分析')
+    send_email_with_text('chenke@maimiaotech.com', content, '省油宝优化频率分析')
+    send_email_with_text('luoyan@maimiaotech.com', content, '省油宝优化频率分析')
 
 if __name__ == '__main__':
     analysis_campaign_status()
