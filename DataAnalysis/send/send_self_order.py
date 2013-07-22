@@ -40,6 +40,7 @@ def send_add_order_and_support():
     subject = '昨日新增订单测试版'
     content = '支持专属客服,注意，订单抓取现在使用新脚本且近期订单API抽风的可能性比较大，请事先认真核对下再导入到百会CRM。\n有问题和不明确的请及时反馈'
     send_email_with_file('zhangfenfen@maimiaotech.com', content, subject, [send_order, send_support])
+    send_email_with_file('xieguanfu@maimiaotech.com', content, subject, [send_order, send_support])
     #send_email_with_file('zhoujiebing@maimiaotech.com', content, subject, [send_order, send_support])
 
 

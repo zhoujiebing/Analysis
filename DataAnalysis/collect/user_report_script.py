@@ -154,7 +154,8 @@ def renew_account_script():
         renew_account_service()
     except Exception,e:
         logger.exception('renew_account_script error: %s', str(e))
-        send_sms('13738141586', 'renew_account_script error: %s' % (str(e)))
+        #send_sms('13738141586', 'renew_account_script error: %s' % (str(e)))
+        send_sms(DIRECTOR['PHONE'], 'renew_account_script error: %s' % (str(e)))
     else:
         logger.info('renew_account_script ok')
 
@@ -177,12 +178,14 @@ def renew_account_service(_days = 4):
         write_renew_report(file_name, nick_list)
         send_file = CURRENT_DIR+'data/renew_report.csv' 
         text = '需电话营销的用户报表测试版'
-        #send_email_with_file('zhoujiebing@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
+        send_email_with_file('zhoujiebing@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
         send_email_with_file('zhangfenfen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
-        send_email_with_file('xiaoshouxukai@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
-        send_email_with_file('chenlifen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
+        #send_email_with_file('xiaoshouxukai@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
+        #send_email_with_file('chenlifen@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
+        send_email_with_file('xieguanfu@maimiaotech.com', text, str(renew_date)+'电话营销的用户报表', [send_file])
     logger.info('renew_account_script success')
 
 if __name__ == '__main__':
-    #auto_support_script()
-    special_content_service()
+    auto_support_script()
+    #special_content_service()
+    #renew_account_service()

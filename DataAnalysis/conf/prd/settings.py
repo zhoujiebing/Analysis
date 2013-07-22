@@ -29,9 +29,10 @@ def set_soft_code(soft_code):
     from Analysis.conf import set_env
     set_env.getEnvReady(SOFT_CODE_SETTING)
     
-CURRENT_DIR = '/home/zhoujiebing/Analysis/DataAnalysis/'
+CURRENT_DIR=os.path.normpath(os.path.join(os.path.dirname(__file__),"../"))
+CURRENT_DIR+="/"
 logger = logging.getLogger("DataAnalysis")
-hdlr = logging.FileHandler(CURRENT_DIR+'data/report_log')
+hdlr = logging.FileHandler(CURRENT_DIR+'/data/report_log')
 hdlr.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')
 hdlr.setFormatter(formatter)

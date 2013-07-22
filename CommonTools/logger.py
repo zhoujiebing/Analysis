@@ -9,10 +9,11 @@
 @copyright: Copyright alibaba-inc.com
 
 """
-
+import os,sys
+CURRENT_DIR=os.path.normpath(os.path.join(os.path.dirname(__file__),"../"))
 import logging
 logger = logging.getLogger('Analysis')
-hdlr = logging.FileHandler('/home/zhoujiebing/Analysis/log')
+hdlr = logging.FileHandler(CURRENT_DIR+"/log")
 hdlr.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')
 hdlr.setFormatter(formatter)
