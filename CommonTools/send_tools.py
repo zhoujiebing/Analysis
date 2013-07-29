@@ -96,15 +96,8 @@ def send_email_with_file(addressee, text, subject, file_list):
         logger.exception('send_email: %s' % (str(e)))
 
 def _toHex(str,charset):
-    s = str.encode(charset)
-    lst = []
-    for ch in s:
-        hv = hex(ord(ch)).replace('0x', '')
-        if len(hv) == 1:
-            hv = '0'+hv
-        lst.append(hv)
-    return reduce(lambda x,y:x+y, lst)
-def _toHex(str,charset):
+    if type(str) == type('type'):
+        str = str.decode('utf-8')
     s = str.encode(charset)
     lst = []
     for ch in s:
@@ -153,4 +146,5 @@ def send_sms(cellphone, text, retry_times=3):
 
 if __name__ == '__main__':
     #send_email_with_text(DIRECTOR['EMAIL'], 'text', 'subject')
-    send_sms(DIRECTOR['PHONE'], u'测试短信')
+    send_sms(DIRECTOR['PHONE'], u'测试短信1')
+    send_sms(DIRECTOR['PHONE'], '测试短信2')

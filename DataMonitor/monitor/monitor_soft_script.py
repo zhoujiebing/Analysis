@@ -17,7 +17,7 @@ if __name__ == '__main__':
 import DataMonitor.conf.settings
 from CommonTools.send_tools import send_sms, DIRECTOR
 from CommonTools.logger import logger
-from DataMonitor.monitor.monitor_marketing_cost import monitor_marketing_cost
+#from DataMonitor.monitor.monitor_marketing_cost import monitor_marketing_cost
 from DataMonitor.monitor.monitor_order_add import monitor_order_add
 from DataMonitor.monitor.monitor_comment_add import monitor_comment_add
 
@@ -51,7 +51,7 @@ def monitor_soft():
     
     if return_info:
         #send_sms(DIRECTOR['PHONE'], return_info)
-        
+
         #send XJ
         #send_sms('18658818166', return_info)
         if comment_info:
