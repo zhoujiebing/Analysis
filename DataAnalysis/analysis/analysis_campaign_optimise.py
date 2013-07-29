@@ -36,26 +36,20 @@ def analysis_campaign_status():
     shop_status_list = Shop.get_all_normal_shop_status(2)
     for shop_status in shop_status_list:
         #加力计划
-        campaign_ids = shop_status.get('key_campaign_ids', [])
-        for campaign_id in campaign_ids:
-            campaign_setting = shop_status[str(campaign_id)]
-            optimize_time = campaign_setting.get('key_campaign_optimize_time', None)
-            if not campaign_setting.get('key_campaign_cancel_status', False) and optimize_time:
-                optimize_date = optimize_time.date()
-                if not key_campaign_optimize.has_key(optimize_date):
-                    key_campaign_optimize[optimize_date] = 0
-                key_campaign_optimize[optimize_date] += 1
+        optimize_time = shop_status.get('key_campaign_optimize_time', None)
+        if not shop_status.get('key_campaign_cancel_status', False) and optimize_time:
+            optimize_date = optimize_time.date()
+            if not key_campaign_optimize.has_key(optimize_date):
+                key_campaign_optimize[optimize_date] = 0
+            key_campaign_optimize[optimize_date] += 1
         
         #长尾计划
-        campaign_ids = shop_status.get('auto_campaign_ids', [])
-        for campaign_id in campaign_ids:
-            campaign_setting = shop_status[str(campaign_id)]
-            optimize_time = campaign_setting.get('auto_campaign_optimize_time', None)
-            if not campaign_setting.get('auto_campaign_cancel_status', False) and optimize_time:
-                optimize_date = optimize_time.date()
-                if not auto_campaign_optimize.has_key(optimize_date):
-                    auto_campaign_optimize[optimize_date] = 0
-                auto_campaign_optimize[optimize_date] += 1
+        optimize_time = shop_status.get('auto_campaign_optimize_time', None)
+        if not shop_status.get('auto_campaign_cancel_status', False) and optimize_time:
+            optimize_date = optimize_time.date()
+            if not auto_campaign_optimize.has_key(optimize_date):
+                auto_campaign_optimize[optimize_date] = 0
+            auto_campaign_optimize[optimize_date] += 1
      
     date_list = []
     edate = datetime.date.today()

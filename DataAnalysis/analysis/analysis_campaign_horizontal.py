@@ -29,12 +29,13 @@ def compare_campain(syb, another):
     compare two campaign in three sides, multi_roi multi_pay and roi
     """
     compare_result = []
-    delta = another['multi_roi'] - syb['multi_roi'] + 0.000001
-    compare_result.append(1+int(round(delta/abs(delta+0.00001))))
-    delta = another['multi_pay'] - syb['multi_pay'] + 0.000001
-    compare_result.append(1+int(round(delta/abs(delta+0.00001))))
-    delta = another['roi'] - syb['roi'] + 0.000001
-    compare_result.append(1+int(round(delta/abs(delta+0.00001))))
+    key_list = ['multi_roi', 'multi_pay', 'roi']
+    for key in key_list:
+        delta = another[key] - syb[key]
+        if delta == 0:
+            compare_result.append(1)
+        else:
+            compare_result.append(1+int(delta/abs(delta)))
     return compare_result
 
 def analysis(campaigns, _number_dict):
